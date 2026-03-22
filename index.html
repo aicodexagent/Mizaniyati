@@ -1,34 +1,36 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="تطبيق ذكي لإدارة الميزانية الشخصية ومتابعة المصروفات اليومية"/>
-    <meta name="theme-color" content="#10b981"/>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تطبيق ذكي لإدارة الميزانية الشخصية ومتابعة المصروفات اليومية">
+    <meta name="theme-color" content="#10b981">
     
     <!-- Open Graph -->
-    <meta property="og:title" content="ميزانيتي – صارف بذكاء"/>
-    <meta property="og:description" content="تطبيق ذكي لإدارة الميزانية الشخصية ومتابعة المصروفات اليومية"/>
-    <meta property="og:url" content="https://www.onspace.ai"/>
-    <meta property="og:type" content="website"/>
-    <meta property="og:site_name" content="OnSpace.AI"/>
-    <meta property="og:image" content="https://cdn-ai.onspace.ai/onspace/project/screenshot/online/pre-site/9bg2ml.jpg"/>
-    <meta property="og:image:width" content="1200"/>
-    <meta property="og:image:height" content="630"/>
+    <meta property="og:title" content="ميزانيتي – صارف بذكاء">
+    <meta property="og:description" content="تطبيق ذكي لإدارة الميزانية الشخصية ومتابعة المصروفات اليومية">
+    <meta property="og:url" content="https://www.onspace.ai">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="OnSpace.AI">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=ميزانيتي">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="twitter:title" content="ميزانيتي – صارف بذكاء"/>
-    <meta name="twitter:description" content="تطبيق ذكي لإدارة الميزانية الشخصية ومتابعة المصروفات اليومية"/>
-    <meta name="twitter:image" content="https://cdn-ai.onspace.ai/onspace/project/screenshot/online/pre-site/9bg2ml.jpg"/>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ميزانيتي – صارف بذكاء">
+    <meta name="twitter:description" content="تطبيق ذكي لإدارة الميزانية الشخصية ومتابعة المصروفات اليومية">
+    <meta name="twitter:image" content="https://via.placeholder.com/1200x630.png?text=ميزانيتي">
     
     <title>ميزانيتي – صارف بذكاء</title>
     
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -36,7 +38,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
-    <!-- jsPDF &amp; html2canvas -->
+    <!-- jsPDF & html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -130,6 +132,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            justify-content: center;
         }
         
         .btn-primary {
@@ -218,6 +221,11 @@
             border-right-color: #ef4444;
         }
         
+        .expense-item.recurring {
+            border-right-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
         .tab-button {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -256,6 +264,44 @@
             to { transform: rotate(360deg); }
         }
         
+        .day-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .day-checkbox {
+            display: none;
+        }
+        
+        .day-label {
+            padding: 0.75rem;
+            background: #f3f4f6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .day-checkbox:checked + .day-label {
+            background: #10b981;
+            color: white;
+            border-color: #059669;
+        }
+        
+        .recurring-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
         /* RTL Adjustments */
         [dir="rtl"] .toast {
             right: auto;
@@ -288,6 +334,10 @@
                 right: 1rem;
                 bottom: 1rem;
             }
+            
+            .day-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -311,24 +361,34 @@
                             <i class="fas fa-money-bill-wave text-green-500 ml-2"></i>
                             الراتب الشهري (جنيه)
                         </label>
-                        <input type="number" id="setupSalary" required="" min="0" step="0.01" placeholder="مثال: 4000"/>
+                        <input type="number" id="setupSalary" required min="0" step="0.01" placeholder="مثال: 4000">
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 font-semibold mb-2">
-                            <i class="fas fa-calendar-day text-blue-500 ml-2"></i>
-                            تاريخ نزول الراتب (اليوم من الشهر)
+                            <i class="fas fa-calendar-check text-blue-500 ml-2"></i>
+                            نوع الراتب
                         </label>
-                        <select id="setupPayday" required="">
-                            <option value="">اختر اليوم</option>
-                            <option value="1">1</option>
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                            <option value="20">20</option>
-                            <option value="25">25</option>
-                            <option value="30">30</option>
+                        <select id="setupSalaryType" onchange="togglePaydayInput()" required>
+                            <option value="fixed">منتظم (يوم محدد كل شهر)</option>
+                            <option value="irregular">غير منتظم</option>
                         </select>
+                    </div>
+                    
+                    <div id="fixedPaydaySection" class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">
+                            <i class="fas fa-calendar-day text-blue-500 ml-2"></i>
+                            يوم نزول الراتب (من 1 إلى 31)
+                        </label>
+                        <input type="number" id="setupPayday" min="1" max="31" placeholder="مثال: 25">
+                    </div>
+                    
+                    <div id="irregularPaydaySection" class="mb-4 hidden">
+                        <label class="block text-gray-700 font-semibold mb-2">
+                            <i class="fas fa-calendar-alt text-blue-500 ml-2"></i>
+                            تاريخ الراتب القادم
+                        </label>
+                        <input type="date" id="setupNextPayday">
                     </div>
                     
                     <div class="mb-6">
@@ -336,7 +396,7 @@
                             <i class="fas fa-shield-alt text-red-500 ml-2"></i>
                             المبلغ الاحتياطي للطوارئ (اختياري)
                         </label>
-                        <input type="number" id="setupEmergency" min="0" step="0.01" placeholder="افتراضي: 500"/>
+                        <input type="number" id="setupEmergency" min="0" step="0.01" placeholder="افتراضي: 500">
                     </div>
                     
                     <button type="submit" class="btn btn-primary w-full text-lg">
@@ -369,15 +429,19 @@
             <!-- Tabs -->
             <div class="card mb-6">
                 <div class="flex gap-2 border-b border-gray-200 overflow-x-auto">
-                    <button class="tab-button active" onclick="switchTab(&#39;dashboard&#39;)">
+                    <button class="tab-button active" onclick="switchTab('dashboard')">
                         <i class="fas fa-chart-pie ml-1"></i>
                         لوحة التحكم
                     </button>
-                    <button class="tab-button" onclick="switchTab(&#39;expenses&#39;)">
+                    <button class="tab-button" onclick="switchTab('expenses')">
                         <i class="fas fa-list ml-1"></i>
                         المصروفات
                     </button>
-                    <button class="tab-button" onclick="switchTab(&#39;reports&#39;)">
+                    <button class="tab-button" onclick="switchTab('recurring')">
+                        <i class="fas fa-sync-alt ml-1"></i>
+                        المصاريف الثابتة
+                    </button>
+                    <button class="tab-button" onclick="switchTab('reports')">
                         <i class="fas fa-chart-bar ml-1"></i>
                         التقارير
                     </button>
@@ -414,10 +478,15 @@
                 </div>
                 
                 <!-- Actions -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <button onclick="openExpenseModal()" class="btn btn-primary w-full text-lg py-4">
                         <i class="fas fa-plus-circle"></i>
                         إضافة مصروف
+                    </button>
+                    
+                    <button onclick="openRecurringModal()" class="btn btn-secondary w-full text-lg py-4">
+                        <i class="fas fa-sync-alt"></i>
+                        مصروف ثابت
                     </button>
                     
                     <button onclick="openAddToEmergencyModal()" class="btn btn-secondary w-full text-lg py-4">
@@ -444,23 +513,48 @@
             <!-- Expenses Tab -->
             <div id="expensesTab" class="tab-content">
                 <div class="card mb-4">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
                         <h3 class="text-xl font-bold text-gray-800">
                             <i class="fas fa-receipt text-green-500 ml-2"></i>
                             جميع المصروفات
                         </h3>
-                        <select id="filterCategory" onchange="renderExpenses()" class="w-48">
-                            <option value="all">جميع الفئات</option>
-                            <option value="مواصلات">مواصلات</option>
-                            <option value="أكل">أكل</option>
-                            <option value="فواتير">فواتير</option>
-                            <option value="ترفيه">ترفيه</option>
-                            <option value="طوارئ">طوارئ</option>
-                            <option value="ادخار">ادخار</option>
-                            <option value="أخرى">أخرى</option>
-                        </select>
+                        <div class="flex gap-2 flex-wrap">
+                            <select id="filterCategory" onchange="renderExpenses()" class="w-48">
+                                <option value="all">جميع الفئات</option>
+                                <option value="مواصلات">مواصلات</option>
+                                <option value="أكل">أكل</option>
+                                <option value="فواتير">فواتير</option>
+                                <option value="ترفيه">ترفيه</option>
+                                <option value="طوارئ">طوارئ</option>
+                                <option value="ادخار">ادخار</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                            <select id="filterType" onchange="renderExpenses()">
+                                <option value="all">جميع الأنواع</option>
+                                <option value="regular">عادية</option>
+                                <option value="recurring">ثابتة</option>
+                                <option value="emergency">طارئة</option>
+                            </select>
+                        </div>
                     </div>
                     <div id="allExpenses"></div>
+                </div>
+            </div>
+            
+            <!-- Recurring Tab -->
+            <div id="recurringTab" class="tab-content">
+                <div class="card">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-sync-alt text-blue-500 ml-2"></i>
+                            المصاريف الثابتة المتكررة
+                        </h3>
+                        <button onclick="openRecurringModal()" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i>
+                            إضافة مصروف ثابت
+                        </button>
+                    </div>
+                    <div id="recurringExpensesList"></div>
                 </div>
             </div>
             
@@ -527,26 +621,26 @@
             </div>
             
             <form id="expenseForm">
-                <input type="hidden" id="expenseId"/>
+                <input type="hidden" id="expenseId">
                 
                 <div class="mb-4">
                     <label class="block text-gray-700 font-semibold mb-2">اسم المصروف</label>
-                    <input type="text" id="expenseName" required="" placeholder="مثال: بنزين"/>
+                    <input type="text" id="expenseName" required placeholder="مثال: بنزين">
                 </div>
                 
                 <div class="mb-4">
                     <label class="block text-gray-700 font-semibold mb-2">المبلغ (جنيه)</label>
-                    <input type="number" id="expenseAmount" required="" min="0" step="0.01" placeholder="مثال: 100"/>
+                    <input type="number" id="expenseAmount" required min="0" step="0.01" placeholder="مثال: 100">
                 </div>
                 
                 <div class="mb-4">
                     <label class="block text-gray-700 font-semibold mb-2">التاريخ</label>
-                    <input type="date" id="expenseDate" required=""/>
+                    <input type="date" id="expenseDate" required>
                 </div>
                 
                 <div class="mb-4">
                     <label class="block text-gray-700 font-semibold mb-2">الفئة</label>
-                    <select id="expenseCategory" required="">
+                    <select id="expenseCategory" required>
                         <option value="">اختر الفئة</option>
                         <option value="مواصلات">مواصلات</option>
                         <option value="أكل">أكل</option>
@@ -560,10 +654,10 @@
                 
                 <div class="mb-4">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="expenseIsEmergency" class="w-5 h-5"/>
+                        <input type="checkbox" id="expenseIsEmergency" class="w-5 h-5">
                         <span class="text-gray-700 font-semibold">
                             <i class="fas fa-exclamation-triangle text-red-500"></i>
-                            صرف من الاحتياطي
+                            صرف من الاحتياطي (طوارئ)
                         </span>
                     </label>
                 </div>
@@ -586,6 +680,114 @@
         </div>
     </div>
     
+    <!-- Recurring Expense Modal -->
+    <div id="recurringModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800" id="recurringModalTitle">إضافة مصروف ثابت</h3>
+                <button onclick="closeRecurringModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="recurringForm">
+                <input type="hidden" id="recurringId">
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">اسم المصروف</label>
+                    <input type="text" id="recurringName" required placeholder="مثال: مواصلات">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">المبلغ (جنيه)</label>
+                    <input type="number" id="recurringAmount" required min="0" step="0.01" placeholder="مثال: 50">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">الفئة</label>
+                    <select id="recurringCategory" required>
+                        <option value="">اختر الفئة</option>
+                        <option value="مواصلات">مواصلات</option>
+                        <option value="أكل">أكل</option>
+                        <option value="فواتير">فواتير</option>
+                        <option value="ترفيه">ترفيه</option>
+                        <option value="ادخار">ادخار</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">نمط التكرار</label>
+                    <select id="recurringPattern" onchange="toggleRecurringOptions()" required>
+                        <option value="">اختر النمط</option>
+                        <option value="daily">يومي</option>
+                        <option value="weekly">أسبوعي</option>
+                        <option value="monthly">شهري</option>
+                    </select>
+                </div>
+                
+                <div id="weeklyOptions" class="mb-4 hidden">
+                    <label class="block text-gray-700 font-semibold mb-2">اختر الأيام</label>
+                    <div class="day-selector">
+                        <div>
+                            <input type="checkbox" id="day0" class="day-checkbox" value="0">
+                            <label for="day0" class="day-label">الأحد</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="day1" class="day-checkbox" value="1">
+                            <label for="day1" class="day-label">الاثنين</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="day2" class="day-checkbox" value="2">
+                            <label for="day2" class="day-label">الثلاثاء</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="day3" class="day-checkbox" value="3">
+                            <label for="day3" class="day-label">الأربعاء</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="day4" class="day-checkbox" value="4">
+                            <label for="day4" class="day-label">الخميس</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="day5" class="day-checkbox" value="5">
+                            <label for="day5" class="day-label">الجمعة</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="day6" class="day-checkbox" value="6">
+                            <label for="day6" class="day-label">السبت</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="monthlyOptions" class="mb-4 hidden">
+                    <label class="block text-gray-700 font-semibold mb-2">اليوم من الشهر (1-31)</label>
+                    <input type="number" id="recurringDayOfMonth" min="1" max="31" placeholder="مثال: 15">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">تاريخ البدء</label>
+                    <input type="date" id="recurringStartDate" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">ملاحظات (اختياري)</label>
+                    <textarea id="recurringNote" rows="2" placeholder="أضف ملاحظة..."></textarea>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-save"></i>
+                        حفظ
+                    </button>
+                    <button type="button" onclick="closeRecurringModal()" class="btn btn-secondary">
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Settings Modal -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">
@@ -599,25 +801,30 @@
             <form id="settingsForm">
                 <div class="mb-4">
                     <label class="block text-gray-700 font-semibold mb-2">الراتب الشهري (جنيه)</label>
-                    <input type="number" id="settingsSalary" required="" min="0" step="0.01"/>
+                    <input type="number" id="settingsSalary" required min="0" step="0.01">
                 </div>
                 
                 <div class="mb-4">
-                    <label class="block text-gray-700 font-semibold mb-2">تاريخ نزول الراتب (اليوم من الشهر)</label>
-                    <select id="settingsPayday" required="">
-                        <option value="1">1</option>
-                        <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="15">15</option>
-                        <option value="20">20</option>
-                        <option value="25">25</option>
-                        <option value="30">30</option>
+                    <label class="block text-gray-700 font-semibold mb-2">نوع الراتب</label>
+                    <select id="settingsSalaryType" onchange="toggleSettingsPaydayInput()" required>
+                        <option value="fixed">منتظم (يوم محدد كل شهر)</option>
+                        <option value="irregular">غير منتظم</option>
                     </select>
+                </div>
+                
+                <div id="settingsFixedPaydaySection" class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">يوم نزول الراتب (من 1 إلى 31)</label>
+                    <input type="number" id="settingsPayday" min="1" max="31">
+                </div>
+                
+                <div id="settingsIrregularPaydaySection" class="mb-4 hidden">
+                    <label class="block text-gray-700 font-semibold mb-2">تاريخ الراتب القادم</label>
+                    <input type="date" id="settingsNextPayday">
                 </div>
                 
                 <div class="mb-6">
                     <label class="block text-gray-700 font-semibold mb-2">المبلغ الاحتياطي للطوارئ</label>
-                    <input type="number" id="settingsEmergency" required="" min="0" step="0.01"/>
+                    <input type="number" id="settingsEmergency" required min="0" step="0.01">
                 </div>
                 
                 <div class="flex gap-3">
@@ -646,7 +853,7 @@
             <form id="addToEmergencyForm">
                 <div class="mb-6">
                     <label class="block text-gray-700 font-semibold mb-2">المبلغ (جنيه)</label>
-                    <input type="number" id="addToEmergencyAmount" required="" min="0" step="0.01" placeholder="مثال: 100"/>
+                    <input type="number" id="addToEmergencyAmount" required min="0" step="0.01" placeholder="مثال: 100">
                 </div>
                 
                 <div class="flex gap-3">
@@ -675,7 +882,7 @@
             <form id="withdrawFromEmergencyForm">
                 <div class="mb-6">
                     <label class="block text-gray-700 font-semibold mb-2">المبلغ (جنيه)</label>
-                    <input type="number" id="withdrawFromEmergencyAmount" required="" min="0" step="0.01" placeholder="مثال: 100"/>
+                    <input type="number" id="withdrawFromEmergencyAmount" required min="0" step="0.01" placeholder="مثال: 100">
                     <p class="text-sm text-gray-600 mt-2">الرصيد الاحتياطي الحالي: <span id="currentEmergencyFund" class="font-bold">0</span> جنيه</p>
                 </div>
                 
@@ -699,9 +906,12 @@
         // Data Structure
         let appData = {
             salary: 0,
+            salaryType: 'fixed', // 'fixed' or 'irregular'
             payday: 25,
+            nextPayday: null, // for irregular salary
             emergencyFund: 500,
-            expenses: []
+            expenses: [],
+            recurringExpenses: []
         };
         
         let currentChart = null;
@@ -714,14 +924,18 @@
                 showSetupScreen();
             } else {
                 showMainApp();
+                // Generate recurring expenses on load
+                generateRecurringExpenses();
             }
             
             // Set today's date as default
             document.getElementById('expenseDate').valueAsDate = new Date();
+            document.getElementById('recurringStartDate').valueAsDate = new Date();
             
             // Setup Forms
             document.getElementById('setupForm').addEventListener('submit', handleSetup);
             document.getElementById('expenseForm').addEventListener('submit', handleExpenseSubmit);
+            document.getElementById('recurringForm').addEventListener('submit', handleRecurringSubmit);
             document.getElementById('settingsForm').addEventListener('submit', handleSettingsSubmit);
             document.getElementById('addToEmergencyForm').addEventListener('submit', handleAddToEmergency);
             document.getElementById('withdrawFromEmergencyForm').addEventListener('submit', handleWithdrawFromEmergency);
@@ -781,7 +995,7 @@
         // Register Service Worker
         function registerServiceWorker() {
             const swCode = `
-                const CACHE_NAME = 'mizaniyati-v1';
+                const CACHE_NAME = 'mizaniyati-v2';
                 const urlsToCache = [
                     '/',
                     '/index.html'
@@ -829,6 +1043,9 @@
             const saved = localStorage.getItem('mizaniyati');
             if (saved) {
                 appData = JSON.parse(saved);
+                // Ensure new fields exist
+                if (!appData.salaryType) appData.salaryType = 'fixed';
+                if (!appData.recurringExpenses) appData.recurringExpenses = [];
             }
         }
         
@@ -848,6 +1065,40 @@
             updateDashboard();
             renderExpenses();
             renderReports();
+            renderRecurringExpenses();
+        }
+        
+        // Toggle payday input based on salary type
+        function togglePaydayInput() {
+            const type = document.getElementById('setupSalaryType').value;
+            const fixedSection = document.getElementById('fixedPaydaySection');
+            const irregularSection = document.getElementById('irregularPaydaySection');
+            
+            if (type === 'fixed') {
+                fixedSection.classList.remove('hidden');
+                irregularSection.classList.add('hidden');
+                document.getElementById('setupPayday').required = true;
+                document.getElementById('setupNextPayday').required = false;
+            } else {
+                fixedSection.classList.add('hidden');
+                irregularSection.classList.remove('hidden');
+                document.getElementById('setupPayday').required = false;
+                document.getElementById('setupNextPayday').required = true;
+            }
+        }
+        
+        function toggleSettingsPaydayInput() {
+            const type = document.getElementById('settingsSalaryType').value;
+            const fixedSection = document.getElementById('settingsFixedPaydaySection');
+            const irregularSection = document.getElementById('settingsIrregularPaydaySection');
+            
+            if (type === 'fixed') {
+                fixedSection.classList.remove('hidden');
+                irregularSection.classList.add('hidden');
+            } else {
+                fixedSection.classList.add('hidden');
+                irregularSection.classList.remove('hidden');
+            }
         }
         
         // Setup Handler
@@ -855,7 +1106,16 @@
             e.preventDefault();
             
             appData.salary = parseFloat(document.getElementById('setupSalary').value);
-            appData.payday = parseInt(document.getElementById('setupPayday').value);
+            appData.salaryType = document.getElementById('setupSalaryType').value;
+            
+            if (appData.salaryType === 'fixed') {
+                appData.payday = parseInt(document.getElementById('setupPayday').value);
+                appData.nextPayday = null;
+            } else {
+                appData.payday = null;
+                appData.nextPayday = document.getElementById('setupNextPayday').value;
+            }
+            
             appData.emergencyFund = parseFloat(document.getElementById('setupEmergency').value) || 500;
             
             saveData();
@@ -866,24 +1126,33 @@
         // Calculations
         function getDaysUntilNextPayday() {
             const today = new Date();
-            const currentDay = today.getDate();
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
+            today.setHours(0, 0, 0, 0);
             
-            let nextPayday;
-            
-            if (currentDay >= appData.payday) {
-                // Next payday is in next month
-                nextPayday = new Date(currentYear, currentMonth + 1, appData.payday);
+            if (appData.salaryType === 'irregular') {
+                if (!appData.nextPayday) return 30; // default
+                const nextPayday = new Date(appData.nextPayday);
+                nextPayday.setHours(0, 0, 0, 0);
+                const diffTime = nextPayday - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays > 0 ? diffDays : 1;
             } else {
-                // Next payday is this month
-                nextPayday = new Date(currentYear, currentMonth, appData.payday);
+                const currentDay = today.getDate();
+                const currentMonth = today.getMonth();
+                const currentYear = today.getFullYear();
+                
+                let nextPayday;
+                
+                if (currentDay >= appData.payday) {
+                    nextPayday = new Date(currentYear, currentMonth + 1, appData.payday);
+                } else {
+                    nextPayday = new Date(currentYear, currentMonth, appData.payday);
+                }
+                
+                const diffTime = nextPayday - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                return diffDays > 0 ? diffDays : 1;
             }
-            
-            const diffTime = nextPayday - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            return diffDays > 0 ? diffDays : 1;
         }
         
         function getCurrentMonthExpenses() {
@@ -898,14 +1167,31 @@
         
         function getLastPayday() {
             const today = new Date();
-            const currentDay = today.getDate();
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
             
-            if (currentDay >= appData.payday) {
-                return new Date(currentYear, currentMonth, appData.payday);
+            if (appData.salaryType === 'irregular') {
+                // For irregular, we need to calculate based on saved nextPayday
+                // This is simplified - you might want to store history
+                if (!appData.nextPayday) return new Date(today.getFullYear(), today.getMonth(), 1);
+                
+                const nextPayday = new Date(appData.nextPayday);
+                if (nextPayday > today) {
+                    // Assume last payday was 30 days before next
+                    const lastPayday = new Date(nextPayday);
+                    lastPayday.setDate(lastPayday.getDate() - 30);
+                    return lastPayday;
+                } else {
+                    return nextPayday;
+                }
             } else {
-                return new Date(currentYear, currentMonth - 1, appData.payday);
+                const currentDay = today.getDate();
+                const currentMonth = today.getMonth();
+                const currentYear = today.getFullYear();
+                
+                if (currentDay >= appData.payday) {
+                    return new Date(currentYear, currentMonth, appData.payday);
+                } else {
+                    return new Date(currentYear, currentMonth - 1, appData.payday);
+                }
             }
         }
         
@@ -921,6 +1207,256 @@
             const days = getDaysUntilNextPayday();
             const available = getAvailableBalance();
             return days > 0 ? available / days : 0;
+        }
+        
+        // Recurring Expenses Management
+        function toggleRecurringOptions() {
+            const pattern = document.getElementById('recurringPattern').value;
+            const weeklyOptions = document.getElementById('weeklyOptions');
+            const monthlyOptions = document.getElementById('monthlyOptions');
+            
+            weeklyOptions.classList.add('hidden');
+            monthlyOptions.classList.add('hidden');
+            
+            if (pattern === 'weekly') {
+                weeklyOptions.classList.remove('hidden');
+            } else if (pattern === 'monthly') {
+                monthlyOptions.classList.remove('hidden');
+            }
+        }
+        
+        function openRecurringModal() {
+            document.getElementById('recurringModalTitle').textContent = 'إضافة مصروف ثابت';
+            document.getElementById('recurringForm').reset();
+            document.getElementById('recurringId').value = '';
+            document.getElementById('recurringStartDate').valueAsDate = new Date();
+            document.getElementById('weeklyOptions').classList.add('hidden');
+            document.getElementById('monthlyOptions').classList.add('hidden');
+            document.getElementById('recurringModal').classList.add('active');
+        }
+        
+        function closeRecurringModal() {
+            document.getElementById('recurringModal').classList.remove('active');
+        }
+        
+        function handleRecurringSubmit(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('recurringId').value;
+            const pattern = document.getElementById('recurringPattern').value;
+            
+            let selectedDays = [];
+            let dayOfMonth = null;
+            
+            if (pattern === 'weekly') {
+                for (let i = 0; i <= 6; i++) {
+                    if (document.getElementById('day' + i).checked) {
+                        selectedDays.push(i);
+                    }
+                }
+                if (selectedDays.length === 0) {
+                    showToast('يجب اختيار يوم واحد على الأقل', 'warning');
+                    return;
+                }
+            } else if (pattern === 'monthly') {
+                dayOfMonth = parseInt(document.getElementById('recurringDayOfMonth').value);
+                if (!dayOfMonth) {
+                    showToast('يجب اختيار يوم من الشهر', 'warning');
+                    return;
+                }
+            }
+            
+            const recurring = {
+                id: id || Date.now().toString(),
+                name: document.getElementById('recurringName').value,
+                amount: parseFloat(document.getElementById('recurringAmount').value),
+                category: document.getElementById('recurringCategory').value,
+                pattern: pattern,
+                selectedDays: selectedDays,
+                dayOfMonth: dayOfMonth,
+                startDate: document.getElementById('recurringStartDate').value,
+                note: document.getElementById('recurringNote').value,
+                isActive: true
+            };
+            
+            if (id) {
+                const index = appData.recurringExpenses.findIndex(r => r.id === id);
+                appData.recurringExpenses[index] = recurring;
+            } else {
+                appData.recurringExpenses.push(recurring);
+            }
+            
+            saveData();
+            closeRecurringModal();
+            renderRecurringExpenses();
+            generateRecurringExpenses();
+            updateDashboard();
+            renderExpenses();
+            
+            showToast('تم حفظ المصروف الثابت بنجاح!', 'success');
+        }
+        
+        function generateRecurringExpenses() {
+            const today = new Date();
+            const lastPayday = getLastPayday();
+            
+            appData.recurringExpenses.forEach(recurring => {
+                if (!recurring.isActive) return;
+                
+                const startDate = new Date(recurring.startDate);
+                if (startDate > today) return;
+                
+                let currentDate = new Date(Math.max(startDate, lastPayday));
+                
+                while (currentDate <= today) {
+                    let shouldAdd = false;
+                    
+                    if (recurring.pattern === 'daily') {
+                        shouldAdd = true;
+                    } else if (recurring.pattern === 'weekly') {
+                        const dayOfWeek = currentDate.getDay();
+                        shouldAdd = recurring.selectedDays.includes(dayOfWeek);
+                    } else if (recurring.pattern === 'monthly') {
+                        shouldAdd = currentDate.getDate() === recurring.dayOfMonth;
+                    }
+                    
+                    if (shouldAdd) {
+                        const dateStr = currentDate.toISOString().split('T')[0];
+                        const exists = appData.expenses.some(exp => 
+                            exp.recurringId === recurring.id && exp.date === dateStr
+                        );
+                        
+                        if (!exists) {
+                            appData.expenses.push({
+                                id: Date.now().toString() + Math.random(),
+                                name: recurring.name,
+                                amount: recurring.amount,
+                                category: recurring.category,
+                                date: dateStr,
+                                isEmergency: false,
+                                note: recurring.note,
+                                recurringId: recurring.id,
+                                isRecurring: true
+                            });
+                        }
+                    }
+                    
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            });
+            
+            saveData();
+        }
+        
+        function renderRecurringExpenses() {
+            const container = document.getElementById('recurringExpensesList');
+            
+            if (appData.recurringExpenses.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">لا توجد مصاريف ثابتة حتى الآن</p>';
+                return;
+            }
+            
+            container.innerHTML = appData.recurringExpenses.map(recurring => {
+                let patternText = '';
+                if (recurring.pattern === 'daily') {
+                    patternText = 'يومي';
+                } else if (recurring.pattern === 'weekly') {
+                    const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+                    patternText = 'أسبوعي: ' + recurring.selectedDays.map(d => days[d]).join(', ');
+                } else if (recurring.pattern === 'monthly') {
+                    patternText = `شهري: يوم ${recurring.dayOfMonth}`;
+                }
+                
+                return `
+                    <div class="expense-item recurring">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h4 class="font-bold text-gray-800">${recurring.name}</h4>
+                                    <span class="recurring-badge">
+                                        <i class="fas fa-sync-alt"></i>
+                                        ${patternText}
+                                    </span>
+                                    ${!recurring.isActive ? '<span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">متوقف</span>' : ''}
+                                </div>
+                                <div class="flex gap-4 text-sm text-gray-600 mb-1">
+                                    <span><i class="fas fa-tag ml-1"></i>${recurring.category}</span>
+                                    <span><i class="fas fa-calendar-plus ml-1"></i>من ${formatDate(recurring.startDate)}</span>
+                                </div>
+                                ${recurring.note ? `<p class="text-sm text-gray-500">${recurring.note}</p>` : ''}
+                            </div>
+                            <div class="text-left mr-4">
+                                <div class="text-xl font-bold text-blue-600 mb-2">${recurring.amount.toFixed(2)} ج</div>
+                                <div class="flex gap-2">
+                                    <button onclick="editRecurring('${recurring.id}')" class="text-blue-500 hover:text-blue-700" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="toggleRecurring('${recurring.id}')" class="text-orange-500 hover:text-orange-700" title="${recurring.isActive ? 'إيقاف' : 'تفعيل'}">
+                                        <i class="fas fa-${recurring.isActive ? 'pause' : 'play'}"></i>
+                                    </button>
+                                    <button onclick="deleteRecurring('${recurring.id}')" class="text-red-500 hover:text-red-700" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function editRecurring(id) {
+            const recurring = appData.recurringExpenses.find(r => r.id === id);
+            if (!recurring) return;
+            
+            document.getElementById('recurringModalTitle').textContent = 'تعديل مصروف ثابت';
+            document.getElementById('recurringId').value = recurring.id;
+            document.getElementById('recurringName').value = recurring.name;
+            document.getElementById('recurringAmount').value = recurring.amount;
+            document.getElementById('recurringCategory').value = recurring.category;
+            document.getElementById('recurringPattern').value = recurring.pattern;
+            document.getElementById('recurringStartDate').value = recurring.startDate;
+            document.getElementById('recurringNote').value = recurring.note || '';
+            
+            toggleRecurringOptions();
+            
+            if (recurring.pattern === 'weekly') {
+                recurring.selectedDays.forEach(day => {
+                    document.getElementById('day' + day).checked = true;
+                });
+            } else if (recurring.pattern === 'monthly') {
+                document.getElementById('recurringDayOfMonth').value = recurring.dayOfMonth;
+            }
+            
+            document.getElementById('recurringModal').classList.add('active');
+        }
+        
+        function toggleRecurring(id) {
+            const recurring = appData.recurringExpenses.find(r => r.id === id);
+            if (!recurring) return;
+            
+            recurring.isActive = !recurring.isActive;
+            saveData();
+            renderRecurringExpenses();
+            
+            showToast(recurring.isActive ? 'تم تفعيل المصروف الثابت' : 'تم إيقاف المصروف الثابت', 'success');
+        }
+        
+        function deleteRecurring(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا المصروف الثابت؟\nسيتم حذف جميع المصاريف المرتبطة به.')) return;
+            
+            // Remove recurring expense
+            appData.recurringExpenses = appData.recurringExpenses.filter(r => r.id !== id);
+            
+            // Remove all related expenses
+            appData.expenses = appData.expenses.filter(e => e.recurringId !== id);
+            
+            saveData();
+            renderRecurringExpenses();
+            updateDashboard();
+            renderExpenses();
+            
+            showToast('تم حذف المصروف الثابت بنجاح', 'success');
         }
         
         // Dashboard Update
@@ -948,7 +1484,6 @@
                 balanceCard.className = 'card stat-card';
             }
             
-            // Render recent expenses (last 10)
             renderRecentExpenses();
         }
         
@@ -962,12 +1497,13 @@
             }
             
             container.innerHTML = expenses.map(expense => `
-                <div class="expense-item ${expense.isEmergency ? 'emergency' : ''}">
+                <div class="expense-item ${expense.isEmergency ? 'emergency' : ''} ${expense.isRecurring ? 'recurring' : ''}">
                     <div class="flex justify-between items-start">
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-1">
                                 <h4 class="font-bold text-gray-800">${expense.name}</h4>
                                 ${expense.isEmergency ? '<span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">طوارئ</span>' : ''}
+                                ${expense.isRecurring ? '<span class="recurring-badge"><i class="fas fa-sync-alt"></i>ثابت</span>' : ''}
                             </div>
                             <div class="flex gap-4 text-sm text-gray-600">
                                 <span><i class="fas fa-tag ml-1"></i>${expense.category}</span>
@@ -977,14 +1513,16 @@
                         </div>
                         <div class="text-left mr-4">
                             <div class="text-xl font-bold text-red-600 mb-2">${expense.amount.toFixed(2)} ج</div>
-                            <div class="flex gap-2">
-                                <button onclick="editExpense('${expense.id}')" class="text-blue-500 hover:text-blue-700">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="deleteExpense('${expense.id}')" class="text-red-500 hover:text-red-700">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                            ${!expense.isRecurring ? `
+                                <div class="flex gap-2">
+                                    <button onclick="editExpense('${expense.id}')" class="text-blue-500 hover:text-blue-700">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteExpense('${expense.id}')" class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            ` : '<span class="text-xs text-gray-500">مصروف تلقائي</span>'}
                         </div>
                     </div>
                 </div>
@@ -1017,26 +1555,23 @@
                 date: document.getElementById('expenseDate').value,
                 category: isEmergency ? 'طوارئ' : document.getElementById('expenseCategory').value,
                 isEmergency: isEmergency,
-                note: document.getElementById('expenseNote').value
+                note: document.getElementById('expenseNote').value,
+                isRecurring: false
             };
             
             if (id) {
-                // Edit existing
                 const index = appData.expenses.findIndex(e => e.id === id);
                 const oldExpense = appData.expenses[index];
                 
-                // Restore old amount
                 if (oldExpense.isEmergency) {
                     appData.emergencyFund += oldExpense.amount;
                 }
                 
                 appData.expenses[index] = expense;
             } else {
-                // Add new
                 appData.expenses.push(expense);
             }
             
-            // Deduct from emergency fund if needed
             if (expense.isEmergency) {
                 appData.emergencyFund -= expense.amount;
             }
@@ -1047,7 +1582,6 @@
             renderExpenses();
             renderReports();
             
-            // Show smart alert
             const available = getAvailableBalance();
             const daily = getDailyAverage();
             const warningThreshold = appData.salary * 0.1;
@@ -1068,7 +1602,7 @@
         
         function editExpense(id) {
             const expense = appData.expenses.find(e => e.id === id);
-            if (!expense) return;
+            if (!expense || expense.isRecurring) return;
             
             document.getElementById('expenseModalTitle').textContent = 'تعديل مصروف';
             document.getElementById('expenseId').value = expense.id;
@@ -1083,12 +1617,11 @@
         }
         
         function deleteExpense(id) {
+            const expense = appData.expenses.find(e => e.id === id);
+            if (!expense || expense.isRecurring) return;
+            
             if (!confirm('هل أنت متأكد من حذف هذا المصروف؟')) return;
             
-            const expense = appData.expenses.find(e => e.id === id);
-            if (!expense) return;
-            
-            // Restore amount
             if (expense.isEmergency) {
                 appData.emergencyFund += expense.amount;
             }
@@ -1107,11 +1640,22 @@
         function renderExpenses() {
             const container = document.getElementById('allExpenses');
             const filterCategory = document.getElementById('filterCategory').value;
+            const filterType = document.getElementById('filterType').value;
             
             let expenses = getCurrentMonthExpenses();
             
             if (filterCategory !== 'all') {
                 expenses = expenses.filter(e => e.category === filterCategory);
+            }
+            
+            if (filterType !== 'all') {
+                if (filterType === 'regular') {
+                    expenses = expenses.filter(e => !e.isRecurring && !e.isEmergency);
+                } else if (filterType === 'recurring') {
+                    expenses = expenses.filter(e => e.isRecurring);
+                } else if (filterType === 'emergency') {
+                    expenses = expenses.filter(e => e.isEmergency);
+                }
             }
             
             expenses.reverse();
@@ -1122,12 +1666,13 @@
             }
             
             container.innerHTML = expenses.map(expense => `
-                <div class="expense-item ${expense.isEmergency ? 'emergency' : ''}">
+                <div class="expense-item ${expense.isEmergency ? 'emergency' : ''} ${expense.isRecurring ? 'recurring' : ''}">
                     <div class="flex justify-between items-start">
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-1">
                                 <h4 class="font-bold text-gray-800">${expense.name}</h4>
                                 ${expense.isEmergency ? '<span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">طوارئ</span>' : ''}
+                                ${expense.isRecurring ? '<span class="recurring-badge"><i class="fas fa-sync-alt"></i>ثابت</span>' : ''}
                             </div>
                             <div class="flex gap-4 text-sm text-gray-600">
                                 <span><i class="fas fa-tag ml-1"></i>${expense.category}</span>
@@ -1137,14 +1682,16 @@
                         </div>
                         <div class="text-left mr-4">
                             <div class="text-xl font-bold text-red-600 mb-2">${expense.amount.toFixed(2)} ج</div>
-                            <div class="flex gap-2">
-                                <button onclick="editExpense('${expense.id}')" class="text-blue-500 hover:text-blue-700">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="deleteExpense('${expense.id}')" class="text-red-500 hover:text-red-700">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                            ${!expense.isRecurring ? `
+                                <div class="flex gap-2">
+                                    <button onclick="editExpense('${expense.id}')" class="text-blue-500 hover:text-blue-700">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteExpense('${expense.id}')" class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            ` : '<span class="text-xs text-gray-500">مصروف تلقائي</span>'}
                         </div>
                     </div>
                 </div>
@@ -1162,7 +1709,6 @@
             document.getElementById('reportRemaining').textContent = available.toFixed(2) + ' ج';
             document.getElementById('reportEmergency').textContent = appData.emergencyFund.toFixed(2) + ' ج';
             
-            // Chart
             renderChart(expenses);
         }
         
@@ -1171,7 +1717,6 @@
             
             if (!ctx) return;
             
-            // Group by category
             const categoryTotals = {};
             expenses.forEach(expense => {
                 categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount;
@@ -1234,20 +1779,15 @@
             showToast('جاري إنشاء ملف PDF...', 'info');
             
             try {
-                // Capture chart
                 const canvas = await html2canvas(document.getElementById('expensesChart'));
                 const chartImage = canvas.toDataURL('image/png');
                 
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
-                // Add Arabic support (note: jsPDF has limited Arabic support, this is a workaround)
                 pdf.setFont('helvetica');
-                
-                // Title
                 pdf.setFontSize(20);
                 pdf.text('Budget Report - Mizaniyati', 105, 20, { align: 'center' });
                 
-                // Summary
                 pdf.setFontSize(12);
                 let y = 40;
                 pdf.text(`Salary: ${appData.salary.toFixed(2)} EGP`, 20, y);
@@ -1259,11 +1799,9 @@
                 pdf.text(`Emergency Fund: ${appData.emergencyFund.toFixed(2)} EGP`, 20, y);
                 y += 20;
                 
-                // Chart
                 pdf.addImage(chartImage, 'PNG', 20, y, 170, 100);
                 y += 110;
                 
-                // Expenses Table
                 pdf.setFontSize(14);
                 pdf.text('Expenses List:', 20, y);
                 y += 10;
@@ -1324,7 +1862,18 @@
         // Settings
         function openSettings() {
             document.getElementById('settingsSalary').value = appData.salary;
-            document.getElementById('settingsPayday').value = appData.payday;
+            document.getElementById('settingsSalaryType').value = appData.salaryType;
+            
+            if (appData.salaryType === 'fixed') {
+                document.getElementById('settingsPayday').value = appData.payday;
+                document.getElementById('settingsFixedPaydaySection').classList.remove('hidden');
+                document.getElementById('settingsIrregularPaydaySection').classList.add('hidden');
+            } else {
+                document.getElementById('settingsNextPayday').value = appData.nextPayday;
+                document.getElementById('settingsFixedPaydaySection').classList.add('hidden');
+                document.getElementById('settingsIrregularPaydaySection').classList.remove('hidden');
+            }
+            
             document.getElementById('settingsEmergency').value = appData.emergencyFund;
             
             document.getElementById('settingsModal').classList.add('active');
@@ -1338,7 +1887,16 @@
             e.preventDefault();
             
             appData.salary = parseFloat(document.getElementById('settingsSalary').value);
-            appData.payday = parseInt(document.getElementById('settingsPayday').value);
+            appData.salaryType = document.getElementById('settingsSalaryType').value;
+            
+            if (appData.salaryType === 'fixed') {
+                appData.payday = parseInt(document.getElementById('settingsPayday').value);
+                appData.nextPayday = null;
+            } else {
+                appData.payday = null;
+                appData.nextPayday = document.getElementById('settingsNextPayday').value;
+            }
+            
             appData.emergencyFund = parseFloat(document.getElementById('settingsEmergency').value);
             
             saveData();
@@ -1405,17 +1963,18 @@
         
         // Tab Navigation
         function switchTab(tab) {
-            // Remove active from all tabs
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            // Activate selected tab
             event.target.classList.add('active');
             document.getElementById(tab + 'Tab').classList.add('active');
             
-            // Update reports when switching to reports tab
             if (tab === 'reports') {
                 renderReports();
+            } else if (tab === 'recurring') {
+                renderRecurringExpenses();
+            } else if (tab === 'expenses') {
+                renderExpenses();
             }
         }
         
@@ -1457,6 +2016,7 @@
             return date.toLocaleDateString('ar-EG', options);
         }
     </script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+</body>
 
-
-</body></html>
+</html>
