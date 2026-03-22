@@ -649,7 +649,7 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <button onclick="exportPDF()" class="btn btn-primary w-full text-lg py-4">
                         <i class="fas fa-file-pdf"></i>
                         تصدير PDF
@@ -659,6 +659,27 @@
                         <i class="fas fa-share-alt"></i>
                         مشاركة التقرير
                     </button>
+                </div>
+                
+                <div class="card bg-blue-50">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-database text-blue-500 ml-2"></i>
+                        النسخ الاحتياطي للبيانات
+                    </h3>
+                    <p class="text-gray-600 mb-4 text-sm">
+                        احفظ نسخة احتياطية من جميع بياناتك (المصروفات، المصروفات الثابتة، الإعدادات) واستعدها في أي وقت.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="exportData()" class="btn btn-primary w-full">
+                            <i class="fas fa-download"></i>
+                            تصدير البيانات (JSON)
+                        </button>
+                        
+                        <button onclick="triggerImportData()" class="btn btn-secondary w-full">
+                            <i class="fas fa-upload"></i>
+                            استيراد البيانات
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -928,6 +949,28 @@
                     </button>
                 </div>
             </form>
+            
+            <hr class="my-6 border-gray-200">
+            
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h4 class="font-bold text-gray-800 mb-3">
+                    <i class="fas fa-database text-blue-500 ml-2"></i>
+                    النسخ الاحتياطي
+                </h4>
+                <p class="text-sm text-gray-600 mb-3">
+                    احفظ نسخة احتياطية من بياناتك أو استعد بيانات سابقة
+                </p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" onclick="exportData()" class="btn btn-primary w-full">
+                        <i class="fas fa-download"></i>
+                        تصدير
+                    </button>
+                    <button type="button" onclick="triggerImportData()" class="btn btn-secondary w-full">
+                        <i class="fas fa-upload"></i>
+                        استيراد
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -989,6 +1032,9 @@
             </form>
         </div>
     </div>
+    
+    <!-- Import File Input (Hidden) -->
+    <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
     
     <!-- Toast -->
     <div id="toast" class="toast"></div>
@@ -2235,6 +2281,164 @@
             const date = new Date(dateString);
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             return date.toLocaleDateString('ar-EG', options);
+        }
+        
+        // Export Data as JSON
+        function exportData() {
+            try {
+                const exportData = {
+                    version: '1.0',
+                    exportDate: new Date().toISOString(),
+                    data: appData
+                };
+                
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                const filename = `mizaniyati-backup-${new Date().toISOString().split('T')[0]}.json`;
+                link.download = filename;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showToast('تم تصدير البيانات بنجاح! 📥', 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showToast('حدث خطأ أثناء تصدير البيانات', 'danger');
+            }
+        }
+        
+        // Trigger file input for import
+        function triggerImportData() {
+            document.getElementById('importFileInput').click();
+        }
+        
+        // Handle imported file
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.name.endsWith('.json')) {
+                showToast('الرجاء اختيار ملف JSON فقط', 'danger');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (!validateImportedData(importedData)) {
+                        showToast('ملف البيانات غير صالح أو تالف', 'danger');
+                        return;
+                    }
+                    
+                    // Show confirmation dialog
+                    const confirmed = confirm(
+                        '⚠️ تحذير: استيراد البيانات سيستبدل جميع بياناتك الحالية!\n\n' +
+                        'تاريخ النسخة الاحتياطية: ' + new Date(importedData.exportDate).toLocaleDateString('ar-EG') + '\n' +
+                        'عدد المصروفات: ' + (importedData.data.expenses?.length || 0) + '\n' +
+                        'عدد المصروفات الثابتة: ' + (importedData.data.recurringExpenses?.length || 0) + '\n\n' +
+                        'هل تريد المتابعة؟'
+                    );
+                    
+                    if (!confirmed) {
+                        showToast('تم إلغاء الاستيراد', 'info');
+                        return;
+                    }
+                    
+                    importData(importedData.data);
+                    
+                } catch (error) {
+                    console.error('Import error:', error);
+                    showToast('فشل قراءة الملف. تأكد من أنه ملف نسخة احتياطية صحيح.', 'danger');
+                }
+            };
+            
+            reader.onerror = function() {
+                showToast('حدث خطأ أثناء قراءة الملف', 'danger');
+            };
+            
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
+        
+        // Validate imported data structure
+        function validateImportedData(importedData) {
+            if (!importedData || typeof importedData !== 'object') {
+                return false;
+            }
+            
+            if (!importedData.data || typeof importedData.data !== 'object') {
+                return false;
+            }
+            
+            const data = importedData.data;
+            
+            // Check required fields
+            if (typeof data.salary !== 'number') return false;
+            if (!Array.isArray(data.expenses)) return false;
+            if (!Array.isArray(data.recurringExpenses)) return false;
+            
+            // Validate expenses array
+            for (const expense of data.expenses) {
+                if (!expense.id || typeof expense.amount !== 'number' || !expense.date) {
+                    return false;
+                }
+            }
+            
+            // Validate recurring expenses array
+            for (const recurring of data.recurringExpenses) {
+                if (!recurring.id || typeof recurring.amount !== 'number' || !recurring.pattern) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        // Import data and update app
+        function importData(data) {
+            try {
+                // Ensure all required fields exist with defaults
+                appData = {
+                    salary: data.salary || 0,
+                    salaryType: data.salaryType || 'fixed',
+                    payday: data.payday || 25,
+                    nextPayday: data.nextPayday || null,
+                    emergencyFund: data.emergencyFund || 0,
+                    expenses: data.expenses || [],
+                    recurringExpenses: data.recurringExpenses || []
+                };
+                
+                // Save to localStorage
+                saveData();
+                
+                // Update UI
+                if (!appData.salary) {
+                    showSetupScreen();
+                } else {
+                    showMainApp();
+                    generateRecurringExpenses();
+                }
+                
+                showToast('تم استيراد البيانات بنجاح! ✅', 'success');
+                
+                // Close modals if open
+                closeSettings();
+                
+            } catch (error) {
+                console.error('Import data error:', error);
+                showToast('حدث خطأ أثناء استيراد البيانات', 'danger');
+            }
         }
     </script>
 <script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
