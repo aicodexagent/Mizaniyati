@@ -409,11 +409,23 @@
                 <form id="setupForm">
                     <div class="mb-4">
                         <label class="block text-gray-700 font-semibold mb-2">
-                            <i class="fas fa-money-bill-wave text-green-500 ml-2"></i>
-                            الراتب الشهري (جنيه)
+                            <i class="fas fa-user-tag text-purple-500 ml-2"></i>
+                            نوع المستخدم
                         </label>
-                        <input type="number" id="setupSalary" required min="0" step="0.01" placeholder="مثال: 4000">
+                        <select id="setupUserType" onchange="toggleSetupUserType()" required>
+                            <option value="employee">موظف براتب منتظم</option>
+                            <option value="freelancer">عامل حر/غير منتظم (فلاح، نجار، إلخ)</option>
+                        </select>
                     </div>
+                    
+                    <div id="setupEmployeeSection">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-money-bill-wave text-green-500 ml-2"></i>
+                                الراتب الشهري (جنيه)
+                            </label>
+                            <input type="number" id="setupSalary" min="0" step="0.01" placeholder="مثال: 4000">
+                        </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 font-semibold mb-2">
@@ -442,12 +454,48 @@
                         <input type="date" id="setupNextPayday">
                     </div>
                     
-                    <div class="mb-6">
+                    </div>
+                    
+                    <div id="setupFreelancerSection" class="hidden">
+                        <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                            <p class="text-sm text-blue-800">
+                                <i class="fas fa-info-circle ml-1"></i>
+                                كعامل حر، يمكنك إضافة إيراداتك يدوياً (يومي، أسبوعي، شهري) من لوحة التحكم.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
                         <label class="block text-gray-700 font-semibold mb-2">
                             <i class="fas fa-shield-alt text-red-500 ml-2"></i>
-                            المبلغ الاحتياطي للطوارئ (اختياري)
+                            المبلغ الاحتياطي الأولي (اختياري)
                         </label>
-                        <input type="number" id="setupEmergency" min="0" step="0.01" placeholder="افتراضي: 500">
+                        <input type="number" id="setupEmergency" min="0" step="0.01" placeholder="افتراضي: 0">
+                    </div>
+                    
+                    <div class="mb-6 bg-green-50 p-4 rounded-lg">
+                        <label class="flex items-start gap-3 cursor-pointer mb-3">
+                            <input type="checkbox" id="setupAutoSave" class="w-5 h-5 mt-1" onchange="toggleAutoSaveSetup()">
+                            <div class="flex-1">
+                                <span class="text-gray-800 font-semibold block mb-1">
+                                    <i class="fas fa-piggy-bank text-green-500"></i>
+                                    تفعيل الادخار التلقائي
+                                </span>
+                                <span class="text-sm text-gray-600">يتم خصم نسبة تلقائياً من راتبك/إيرادك للاحتياطي</span>
+                            </div>
+                        </label>
+                        <div id="setupAutoSaveOptions" class="hidden mr-8">
+                            <label class="block text-gray-700 font-semibold mb-2 text-sm">
+                                النسبة المئوية للادخار
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <input type="range" id="setupAutoSavePercentage" min="5" max="50" value="10" step="5" class="flex-1" oninput="updateAutoSavePreview()">
+                                <span id="setupAutoSavePreviewPercent" class="text-xl font-bold text-green-600 w-16 text-center">10%</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-2" id="setupAutoSavePreviewText">
+                                مثال: من راتب 4000 ج، سيتم ادخار 400 ج تلقائياً
+                            </p>
+                        </div>
                     </div>
                     
                     <button type="submit" class="btn btn-primary w-full text-lg">
@@ -502,7 +550,13 @@
             <!-- Dashboard Tab -->
             <div id="dashboardTab" class="tab-content active">
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                    <div class="card stat-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <div class="text-sm opacity-90 mb-1" id="totalIncomeLabel">الراتب الشهري</div>
+                        <div class="text-3xl font-bold" id="totalIncome">0</div>
+                        <div class="text-xs opacity-80 mt-1">جنيه</div>
+                    </div>
+                    
                     <div class="card stat-card">
                         <div class="text-sm opacity-90 mb-1">الرصيد المتاح</div>
                         <div class="text-3xl font-bold" id="availableBalance">0</div>
@@ -512,19 +566,19 @@
                     <div class="card stat-card info">
                         <div class="text-sm opacity-90 mb-1">الاحتياطي</div>
                         <div class="text-3xl font-bold" id="emergencyFund">0</div>
-                        <div class="text-xs opacity-80 mt-1">جنيه</div>
+                        <div class="text-xs opacity-80 mt-1" id="autoSaveInfo">جنيه</div>
                     </div>
                     
                     <div class="card stat-card warning">
-                        <div class="text-sm opacity-90 mb-1">الأيام المتبقية</div>
+                        <div class="text-sm opacity-90 mb-1" id="daysRemainingLabel">الأيام المتبقية</div>
                         <div class="text-3xl font-bold" id="daysRemaining">0</div>
-                        <div class="text-xs opacity-80 mt-1">يوم حتى الراتب القادم</div>
+                        <div class="text-xs opacity-80 mt-1">يوم</div>
                     </div>
                     
                     <div class="card stat-card purple">
-                        <div class="text-sm opacity-90 mb-1">المصاريف الثابتة المتوقعة</div>
+                        <div class="text-sm opacity-90 mb-1">المصاريف الثابتة</div>
                         <div class="text-3xl font-bold" id="expectedRecurring">0</div>
-                        <div class="text-xs opacity-80 mt-1">جنيه حتى نهاية الشهر</div>
+                        <div class="text-xs opacity-80 mt-1">متوقعة</div>
                     </div>
                 </div>
                 
@@ -534,8 +588,13 @@
                 <!-- Actions -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <button onclick="openExpenseModal()" class="btn btn-primary w-full text-lg py-4">
-                        <i class="fas fa-plus-circle"></i>
+                        <i class="fas fa-minus-circle"></i>
                         إضافة مصروف
+                    </button>
+                    
+                    <button onclick="openIncomeModal()" class="btn w-full text-lg py-4" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white;" id="addIncomeBtn">
+                        <i class="fas fa-plus-circle"></i>
+                        إضافة إيراد
                     </button>
                     
                     <button onclick="openRecurringModal()" class="btn btn-secondary w-full text-lg py-4">
@@ -545,12 +604,7 @@
                     
                     <button onclick="openAddToEmergencyModal()" class="btn btn-secondary w-full text-lg py-4">
                         <i class="fas fa-piggy-bank"></i>
-                        إضافة للاحتياطي
-                    </button>
-                    
-                    <button onclick="openWithdrawFromEmergencyModal()" class="btn btn-secondary w-full text-lg py-4">
-                        <i class="fas fa-hand-holding-usd"></i>
-                        سحب من الاحتياطي
+                        إدارة الاحتياطي
                     </button>
                 </div>
                 
@@ -597,17 +651,18 @@
             
             <!-- Recurring Tab -->
             <div id="recurringTab" class="tab-content">
+                <div class="mb-4">
+                    <button onclick="openRecurringModal()" class="btn btn-primary w-full text-lg py-4">
+                        <i class="fas fa-plus-circle"></i>
+                        إضافة مصروف ثابت جديد
+                    </button>
+                </div>
+                
                 <div class="card">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-gray-800">
-                            <i class="fas fa-sync-alt text-blue-500 ml-2"></i>
-                            المصاريف الثابتة المتكررة
-                        </h3>
-                        <button onclick="openRecurringModal()" class="btn btn-primary">
-                            <i class="fas fa-plus-circle"></i>
-                            إضافة مصروف ثابت
-                        </button>
-                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-list text-blue-500 ml-2"></i>
+                        قائمة المصاريف الثابتة
+                    </h3>
                     <div id="recurringExpensesList"></div>
                 </div>
             </div>
@@ -1003,6 +1058,50 @@
         </div>
     </div>
     
+    <!-- Income Modal -->
+    <div id="incomeModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">إضافة إيراد</h3>
+                <button onclick="closeIncomeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="incomeForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">وصف الإيراد</label>
+                    <input type="text" id="incomeName" required placeholder="مثال: عمل نجارة، بيع محصول">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">المبلغ (جنيه)</label>
+                    <input type="number" id="incomeAmount" required min="0" step="0.01" placeholder="مثال: 500">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">التاريخ</label>
+                    <input type="date" id="incomeDate" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">ملاحظات (اختياري)</label>
+                    <textarea id="incomeNote" rows="2" placeholder="أضف ملاحظة..."></textarea>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-save"></i>
+                        حفظ
+                    </button>
+                    <button type="button" onclick="closeIncomeModal()" class="btn btn-secondary">
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Withdraw from Emergency Modal -->
     <div id="withdrawFromEmergencyModal" class="modal">
         <div class="modal-content">
@@ -1042,13 +1141,17 @@
     <script>
         // Data Structure
         let appData = {
+            userType: 'employee', // 'employee' or 'freelancer'
             salary: 0,
             salaryType: 'fixed',
             payday: 25,
             nextPayday: null,
             emergencyFund: 500,
+            autoSaveEnabled: false,
+            autoSavePercentage: 10,
             expenses: [],
-            recurringExpenses: []
+            recurringExpenses: [],
+            incomes: [] // For freelancers
         };
         
         let currentChart = null;
@@ -1058,7 +1161,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
             
-            if (!appData.salary) {
+            if (!appData.salary && appData.userType !== 'freelancer') {
                 showSetupScreen();
             } else {
                 showMainApp();
@@ -1074,6 +1177,7 @@
             document.getElementById('settingsForm').addEventListener('submit', handleSettingsSubmit);
             document.getElementById('addToEmergencyForm').addEventListener('submit', handleAddToEmergency);
             document.getElementById('withdrawFromEmergencyForm').addEventListener('submit', handleWithdrawFromEmergency);
+            document.getElementById('incomeForm').addEventListener('submit', handleIncomeSubmit);
             
             document.getElementById('expenseIsEmergency').addEventListener('change', function() {
                 if (this.checked) {
@@ -1182,6 +1286,10 @@
                 appData = JSON.parse(saved);
                 if (!appData.salaryType) appData.salaryType = 'fixed';
                 if (!appData.recurringExpenses) appData.recurringExpenses = [];
+                if (!appData.userType) appData.userType = 'employee';
+                if (!appData.incomes) appData.incomes = [];
+                if (appData.autoSaveEnabled === undefined) appData.autoSaveEnabled = false;
+                if (!appData.autoSavePercentage) appData.autoSavePercentage = 10;
             }
         }
         
@@ -1202,6 +1310,44 @@
             renderExpenses();
             renderReports();
             renderRecurringExpenses();
+        }
+        
+        function toggleSetupUserType() {
+            const userType = document.getElementById('setupUserType').value;
+            const employeeSection = document.getElementById('setupEmployeeSection');
+            const freelancerSection = document.getElementById('setupFreelancerSection');
+            
+            if (userType === 'employee') {
+                employeeSection.classList.remove('hidden');
+                freelancerSection.classList.add('hidden');
+                document.getElementById('setupSalary').required = true;
+            } else {
+                employeeSection.classList.add('hidden');
+                freelancerSection.classList.remove('hidden');
+                document.getElementById('setupSalary').required = false;
+            }
+        }
+        
+        function toggleAutoSaveSetup() {
+            const enabled = document.getElementById('setupAutoSave').checked;
+            const options = document.getElementById('setupAutoSaveOptions');
+            
+            if (enabled) {
+                options.classList.remove('hidden');
+                updateAutoSavePreview();
+            } else {
+                options.classList.add('hidden');
+            }
+        }
+        
+        function updateAutoSavePreview() {
+            const percentage = document.getElementById('setupAutoSavePercentage').value;
+            const salary = parseFloat(document.getElementById('setupSalary').value) || 4000;
+            const saved = salary * (percentage / 100);
+            
+            document.getElementById('setupAutoSavePreviewPercent').textContent = percentage + '%';
+            document.getElementById('setupAutoSavePreviewText').textContent = 
+                `مثال: من ${appData.userType === 'employee' ? 'راتب' : 'إيراد'} ${salary.toFixed(0)} ج، سيتم ادخار ${saved.toFixed(0)} ج تلقائياً`;
         }
         
         function togglePaydayInput() {
@@ -1240,18 +1386,32 @@
         function handleSetup(e) {
             e.preventDefault();
             
-            appData.salary = parseFloat(document.getElementById('setupSalary').value);
-            appData.salaryType = document.getElementById('setupSalaryType').value;
+            appData.userType = document.getElementById('setupUserType').value;
             
-            if (appData.salaryType === 'fixed') {
-                appData.payday = parseInt(document.getElementById('setupPayday').value);
-                appData.nextPayday = null;
+            if (appData.userType === 'employee') {
+                appData.salary = parseFloat(document.getElementById('setupSalary').value);
+                appData.salaryType = document.getElementById('setupSalaryType').value;
+                
+                if (appData.salaryType === 'fixed') {
+                    appData.payday = parseInt(document.getElementById('setupPayday').value);
+                    appData.nextPayday = null;
+                } else {
+                    appData.payday = null;
+                    appData.nextPayday = document.getElementById('setupNextPayday').value;
+                }
             } else {
+                appData.salary = 0;
+                appData.salaryType = 'irregular';
                 appData.payday = null;
-                appData.nextPayday = document.getElementById('setupNextPayday').value;
+                appData.nextPayday = null;
             }
             
-            appData.emergencyFund = parseFloat(document.getElementById('setupEmergency').value) || 500;
+            appData.emergencyFund = parseFloat(document.getElementById('setupEmergency').value) || 0;
+            appData.autoSaveEnabled = document.getElementById('setupAutoSave').checked;
+            
+            if (appData.autoSaveEnabled) {
+                appData.autoSavePercentage = parseFloat(document.getElementById('setupAutoSavePercentage').value);
+            }
             
             saveData();
             showMainApp();
@@ -1331,8 +1491,32 @@
             return getCurrentMonthExpenses().reduce((sum, exp) => sum + exp.amount, 0);
         }
         
+        function getTotalIncome() {
+            if (appData.userType === 'employee') {
+                return appData.salary;
+            } else {
+                const today = new Date();
+                const lastPayday = getLastPayday();
+                
+                return appData.incomes
+                    .filter(income => {
+                        const incomeDate = new Date(income.date);
+                        return incomeDate >= lastPayday;
+                    })
+                    .reduce((sum, income) => sum + income.amount, 0);
+            }
+        }
+        
         function getAvailableBalance() {
-            return appData.salary - getTotalExpenses();
+            const totalIncome = getTotalIncome();
+            const autoSaveAmount = appData.autoSaveEnabled ? (totalIncome * (appData.autoSavePercentage / 100)) : 0;
+            return totalIncome - getTotalExpenses() - autoSaveAmount;
+        }
+        
+        function getAutoSaveAmount() {
+            if (!appData.autoSaveEnabled) return 0;
+            const totalIncome = getTotalIncome();
+            return totalIncome * (appData.autoSavePercentage / 100);
         }
         
         function getDailyAverage() {
@@ -1621,49 +1805,77 @@
             const container = document.getElementById('recurringExpensesList');
             
             if (appData.recurringExpenses.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-8">لا توجد مصاريف ثابتة حتى الآن</p>';
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-sync-alt text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">لا توجد مصاريف ثابتة حتى الآن</p>
+                        <p class="text-gray-400 text-sm mt-2">أضف مصروف ثابت لتتبع المصاريف المتكررة تلقائياً</p>
+                    </div>
+                `;
                 return;
             }
             
             container.innerHTML = appData.recurringExpenses.map(recurring => {
                 let patternText = '';
+                let patternIcon = '';
+                
                 if (recurring.pattern === 'daily') {
                     patternText = 'يومي';
+                    patternIcon = 'fa-calendar-day';
                 } else if (recurring.pattern === 'weekly') {
                     const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-                    patternText = 'أسبوعي: ' + recurring.selectedDays.map(d => days[d]).join(', ');
+                    const shortDays = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+                    patternText = 'أسبوعي: ' + recurring.selectedDays.map(d => shortDays[d]).join('، ');
+                    patternIcon = 'fa-calendar-week';
                 } else if (recurring.pattern === 'monthly') {
                     patternText = `شهري: يوم ${recurring.dayOfMonth}`;
+                    patternIcon = 'fa-calendar-alt';
                 }
                 
+                // Calculate generated expenses count and total
+                const generatedCount = appData.expenses.filter(e => e.recurringId === recurring.id).length;
+                const generatedTotal = appData.expenses
+                    .filter(e => e.recurringId === recurring.id)
+                    .reduce((sum, e) => sum + e.amount, 0);
+                
                 return `
-                    <div class="expense-item recurring">
-                        <div class="flex justify-between items-start">
+                    <div class="expense-item recurring mb-4" style="${!recurring.isActive ? 'opacity: 0.6; border-right-color: #9ca3af;' : ''}">
+                        <div class="flex justify-between items-start mb-3">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <h4 class="font-bold text-gray-800">${recurring.name}</h4>
-                                    <span class="recurring-badge">
-                                        <i class="fas fa-sync-alt"></i>
+                                    <h4 class="font-bold text-gray-800 text-lg">${recurring.name}</h4>
+                                    ${!recurring.isActive ? '<span class="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded-full font-semibold">متوقف</span>' : '<span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">نشط</span>'}
+                                </div>
+                                <div class="flex flex-wrap gap-3 text-sm text-gray-600 mb-2">
+                                    <span class="flex items-center gap-1">
+                                        <i class="fas ${patternIcon} text-blue-500"></i>
                                         ${patternText}
                                     </span>
-                                    ${!recurring.isActive ? '<span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">متوقف</span>' : ''}
+                                    <span class="flex items-center gap-1">
+                                        <i class="fas fa-tag text-green-500"></i>
+                                        ${recurring.category}
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <i class="fas fa-calendar-check text-purple-500"></i>
+                                        من ${formatDate(recurring.startDate)}
+                                    </span>
                                 </div>
-                                <div class="flex gap-4 text-sm text-gray-600 mb-1">
-                                    <span><i class="fas fa-tag ml-1"></i>${recurring.category}</span>
-                                    <span><i class="fas fa-calendar-plus ml-1"></i>من ${formatDate(recurring.startDate)}</span>
+                                <div class="bg-blue-50 p-2 rounded text-xs text-blue-800 inline-block">
+                                    <i class="fas fa-info-circle ml-1"></i>
+                                    تم توليد ${generatedCount} مصروف تلقائي (${generatedTotal.toFixed(2)} ج)
                                 </div>
-                                ${recurring.note ? `<p class="text-sm text-gray-500">${recurring.note}</p>` : ''}
+                                ${recurring.note ? `<p class="text-sm text-gray-500 mt-2"><i class="fas fa-sticky-note ml-1 text-yellow-500"></i>${recurring.note}</p>` : ''}
                             </div>
                             <div class="text-left mr-4">
-                                <div class="text-xl font-bold text-blue-600 mb-2">${recurring.amount.toFixed(2)} ج</div>
-                                <div class="flex gap-2">
-                                    <button onclick="editRecurring('${recurring.id}')" class="text-blue-500 hover:text-blue-700" title="تعديل">
+                                <div class="text-2xl font-bold text-blue-600 mb-3">${recurring.amount.toFixed(2)} ج</div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button onclick="editRecurring('${recurring.id}')" class="btn btn-secondary text-sm py-2" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button onclick="toggleRecurring('${recurring.id}')" class="text-orange-500 hover:text-orange-700" title="${recurring.isActive ? 'إيقاف' : 'تفعيل'}">
+                                    <button onclick="toggleRecurring('${recurring.id}')" class="btn text-sm py-2" style="background: ${recurring.isActive ? '#f59e0b' : '#10b981'}; color: white;" title="${recurring.isActive ? 'إيقاف' : 'تفعيل'}">
                                         <i class="fas fa-${recurring.isActive ? 'pause' : 'play'}"></i>
                                     </button>
-                                    <button onclick="deleteRecurring('${recurring.id}')" class="text-red-500 hover:text-red-700" title="حذف">
+                                    <button onclick="deleteRecurring('${recurring.id}')" class="btn btn-danger text-sm py-2" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -1731,9 +1943,33 @@
             const available = getAvailableBalance();
             const days = getDaysUntilNextPayday();
             const expected = getExpectedRecurringExpenses();
+            const totalIncome = getTotalIncome();
+            const autoSave = getAutoSaveAmount();
             
+            // Update income label based on user type
+            if (appData.userType === 'freelancer') {
+                document.getElementById('totalIncomeLabel').textContent = 'إجمالي الإيرادات';
+                document.getElementById('daysRemainingLabel').textContent = 'الأيام المتبقية';
+                document.getElementById('addIncomeBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('totalIncomeLabel').textContent = 'الراتب الشهري';
+                document.getElementById('daysRemainingLabel').textContent = 'حتى الراتب القادم';
+                document.getElementById('addIncomeBtn').classList.add('hidden');
+            }
+            
+            document.getElementById('totalIncome').textContent = totalIncome.toFixed(2);
             document.getElementById('availableBalance').textContent = available.toFixed(2);
-            document.getElementById('emergencyFund').textContent = appData.emergencyFund.toFixed(2);
+            
+            // Update emergency fund display
+            const emergencyDisplay = appData.emergencyFund + (appData.autoSaveEnabled ? autoSave : 0);
+            document.getElementById('emergencyFund').textContent = emergencyDisplay.toFixed(2);
+            
+            if (appData.autoSaveEnabled) {
+                document.getElementById('autoSaveInfo').textContent = `(+ ${autoSave.toFixed(0)} ج ادخار تلقائي)`;
+            } else {
+                document.getElementById('autoSaveInfo').textContent = 'جنيه';
+            }
+            
             document.getElementById('daysRemaining').textContent = days;
             document.getElementById('expectedRecurring').textContent = expected.toFixed(2);
             
@@ -2283,6 +2519,49 @@
             return date.toLocaleDateString('ar-EG', options);
         }
         
+        // Income Management
+        function openIncomeModal() {
+            document.getElementById('incomeForm').reset();
+            document.getElementById('incomeDate').valueAsDate = new Date();
+            document.getElementById('incomeModal').classList.add('active');
+        }
+        
+        function closeIncomeModal() {
+            document.getElementById('incomeModal').classList.remove('active');
+        }
+        
+        function handleIncomeSubmit(e) {
+            e.preventDefault();
+            
+            const income = {
+                id: Date.now().toString(),
+                name: document.getElementById('incomeName').value,
+                amount: parseFloat(document.getElementById('incomeAmount').value),
+                date: document.getElementById('incomeDate').value,
+                note: document.getElementById('incomeNote').value
+            };
+            
+            appData.incomes.push(income);
+            
+            // Apply auto-save if enabled
+            if (appData.autoSaveEnabled) {
+                const autoSaveAmount = income.amount * (appData.autoSavePercentage / 100);
+                appData.emergencyFund += autoSaveAmount;
+            }
+            
+            saveData();
+            closeIncomeModal();
+            updateDashboard();
+            renderExpenses();
+            renderReports();
+            
+            const message = appData.autoSaveEnabled 
+                ? `تم إضافة إيراد ${income.amount.toFixed(2)} ج! تم ادخار ${(income.amount * (appData.autoSavePercentage / 100)).toFixed(2)} ج تلقائياً (${appData.autoSavePercentage}%).`
+                : `تم إضافة إيراد ${income.amount.toFixed(2)} ج بنجاح!`;
+            
+            showToast(message, 'success');
+        }
+        
         // Export Data as JSON
         function exportData() {
             try {
@@ -2442,6 +2721,8 @@
         }
     </script>
 <script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
 </body>
+
 
 </html>
