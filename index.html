@@ -24,9 +24,12 @@
     
     <title>ميزانيتي – صارف بذكاء</title>
     
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2310b981'/><text x='50' y='70' font-size='70' text-anchor='middle' fill='white'>💰</text></svg>">
+    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <!-- Icons -->
@@ -41,6 +44,26 @@
     <!-- jsPDF & html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!--
+    ========================================
+    تعليمات النشر على GitHub Pages:
+    ========================================
+    
+    1. أنشئ repository جديد على GitHub
+    2. ارفع ملف index.html هذا
+    3. اذهب إلى Settings > Pages
+    4. اختر Branch: main و Folder: / (root)
+    5. احفظ - سيتم نشر التطبيق على: https://username.github.io/repo-name/
+    
+    ملاحظة: التطبيق يعمل كـ PWA ويمكن تثبيته من المتصفح مباشرة!
+    
+    لتثبيت التطبيق على الهاتف:
+    - افتح الرابط في Chrome أو Safari
+    - اضغط على "إضافة إلى الشاشة الرئيسية"
+    - التطبيق سيعمل بدون إنترنت بعد التثبيت!
+    ========================================
+    -->
     
     <style>
         * {
@@ -80,6 +103,10 @@
         
         .stat-card.info {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        .stat-card.purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
         }
         
         .modal {
@@ -302,6 +329,30 @@
             font-weight: 600;
         }
         
+        .prediction-alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+        }
+        
+        .prediction-alert.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .prediction-alert.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .prediction-alert.danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
         /* RTL Adjustments */
         [dir="rtl"] .toast {
             right: auto;
@@ -470,12 +521,15 @@
                         <div class="text-xs opacity-80 mt-1">يوم حتى الراتب القادم</div>
                     </div>
                     
-                    <div class="card stat-card">
-                        <div class="text-sm opacity-90 mb-1">متوسط الإنفاق اليومي</div>
-                        <div class="text-3xl font-bold" id="dailyAverage">0</div>
-                        <div class="text-xs opacity-80 mt-1">جنيه / يوم</div>
+                    <div class="card stat-card purple">
+                        <div class="text-sm opacity-90 mb-1">المصاريف الثابتة المتوقعة</div>
+                        <div class="text-3xl font-bold" id="expectedRecurring">0</div>
+                        <div class="text-xs opacity-80 mt-1">جنيه حتى نهاية الشهر</div>
                     </div>
                 </div>
+                
+                <!-- Prediction Alert -->
+                <div id="predictionAlert"></div>
                 
                 <!-- Actions -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -721,7 +775,7 @@
                     <select id="recurringPattern" onchange="toggleRecurringOptions()" required>
                         <option value="">اختر النمط</option>
                         <option value="daily">يومي</option>
-                        <option value="weekly">أسبوعي</option>
+                        <option value="weekly">أسبوعي (مثال: من الأحد للخميس)</option>
                         <option value="monthly">شهري</option>
                     </select>
                 </div>
@@ -785,6 +839,43 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- Apply Changes to Past Expenses Modal -->
+    <div id="applyChangesModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-question-circle text-blue-500 ml-2"></i>
+                    تطبيق التعديل على المصاريف السابقة؟
+                </h3>
+                <button onclick="closeApplyChangesModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <p class="text-gray-700 mb-6">
+                لقد قمت بتعديل مصروف ثابت. هل تريد تطبيق هذا التعديل على جميع المصاريف التي تم توليدها تلقائياً من هذا المصروف الثابت؟
+            </p>
+            
+            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                <p class="text-sm text-blue-800">
+                    <i class="fas fa-info-circle ml-1"></i>
+                    <strong>ملاحظة:</strong> إذا اخترت "نعم"، سيتم تحديث جميع المصاريف السابقة المرتبطة بهذا المصروف الثابت. إذا اخترت "لا"، سيتم تطبيق التعديل على المصاريف المستقبلية فقط.
+                </p>
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="applyChangesToPast(true)" class="btn btn-primary flex-1">
+                    <i class="fas fa-check"></i>
+                    نعم، طبّق على السابقة
+                </button>
+                <button onclick="applyChangesToPast(false)" class="btn btn-secondary flex-1">
+                    <i class="fas fa-times"></i>
+                    لا، المستقبلية فقط
+                </button>
+            </div>
         </div>
     </div>
     
@@ -906,15 +997,16 @@
         // Data Structure
         let appData = {
             salary: 0,
-            salaryType: 'fixed', // 'fixed' or 'irregular'
+            salaryType: 'fixed',
             payday: 25,
-            nextPayday: null, // for irregular salary
+            nextPayday: null,
             emergencyFund: 500,
             expenses: [],
             recurringExpenses: []
         };
         
         let currentChart = null;
+        let pendingRecurringUpdate = null;
         
         // Initialize App
         document.addEventListener('DOMContentLoaded', function() {
@@ -924,15 +1016,12 @@
                 showSetupScreen();
             } else {
                 showMainApp();
-                // Generate recurring expenses on load
                 generateRecurringExpenses();
             }
             
-            // Set today's date as default
             document.getElementById('expenseDate').valueAsDate = new Date();
             document.getElementById('recurringStartDate').valueAsDate = new Date();
             
-            // Setup Forms
             document.getElementById('setupForm').addEventListener('submit', handleSetup);
             document.getElementById('expenseForm').addEventListener('submit', handleExpenseSubmit);
             document.getElementById('recurringForm').addEventListener('submit', handleRecurringSubmit);
@@ -940,19 +1029,16 @@
             document.getElementById('addToEmergencyForm').addEventListener('submit', handleAddToEmergency);
             document.getElementById('withdrawFromEmergencyForm').addEventListener('submit', handleWithdrawFromEmergency);
             
-            // Emergency checkbox handler
             document.getElementById('expenseIsEmergency').addEventListener('change', function() {
                 if (this.checked) {
                     document.getElementById('expenseCategory').value = 'طوارئ';
                 }
             });
             
-            // Register Service Worker for PWA
             if ('serviceWorker' in navigator) {
                 registerServiceWorker();
             }
             
-            // Setup manifest
             setupManifest();
         });
         
@@ -961,7 +1047,7 @@
             const manifest = {
                 name: "ميزانيتي – صارف بذكاء",
                 short_name: "ميزانيتي",
-                start_url: "/",
+                start_url: "./",
                 display: "standalone",
                 theme_color: "#10b981",
                 background_color: "#f9fafb",
@@ -973,12 +1059,14 @@
                     {
                         src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2310b981'/><text x='50' y='70' font-size='70' text-anchor='middle' fill='white'>💰</text></svg>",
                         sizes: "192x192",
-                        type: "image/svg+xml"
+                        type: "image/svg+xml",
+                        purpose: "any maskable"
                     },
                     {
                         src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2310b981'/><text x='50' y='70' font-size='70' text-anchor='middle' fill='white'>💰</text></svg>",
                         sizes: "512x512",
-                        type: "image/svg+xml"
+                        type: "image/svg+xml",
+                        purpose: "any maskable"
                     }
                 ]
             };
@@ -995,10 +1083,10 @@
         // Register Service Worker
         function registerServiceWorker() {
             const swCode = `
-                const CACHE_NAME = 'mizaniyati-v2';
+                const CACHE_NAME = 'mizaniyati-v3';
                 const urlsToCache = [
-                    '/',
-                    '/index.html'
+                    './',
+                    './index.html'
                 ];
                 
                 self.addEventListener('install', event => {
@@ -1006,12 +1094,14 @@
                         caches.open(CACHE_NAME)
                             .then(cache => cache.addAll(urlsToCache))
                     );
+                    self.skipWaiting();
                 });
                 
                 self.addEventListener('fetch', event => {
                     event.respondWith(
                         caches.match(event.request)
                             .then(response => response || fetch(event.request))
+                            .catch(() => caches.match('./index.html'))
                     );
                 });
                 
@@ -1027,6 +1117,7 @@
                             );
                         })
                     );
+                    return self.clients.claim();
                 });
             `;
             
@@ -1043,7 +1134,6 @@
             const saved = localStorage.getItem('mizaniyati');
             if (saved) {
                 appData = JSON.parse(saved);
-                // Ensure new fields exist
                 if (!appData.salaryType) appData.salaryType = 'fixed';
                 if (!appData.recurringExpenses) appData.recurringExpenses = [];
             }
@@ -1068,7 +1158,6 @@
             renderRecurringExpenses();
         }
         
-        // Toggle payday input based on salary type
         function togglePaydayInput() {
             const type = document.getElementById('setupSalaryType').value;
             const fixedSection = document.getElementById('fixedPaydaySection');
@@ -1129,7 +1218,7 @@
             today.setHours(0, 0, 0, 0);
             
             if (appData.salaryType === 'irregular') {
-                if (!appData.nextPayday) return 30; // default
+                if (!appData.nextPayday) return 30;
                 const nextPayday = new Date(appData.nextPayday);
                 nextPayday.setHours(0, 0, 0, 0);
                 const diffTime = nextPayday - today;
@@ -1169,13 +1258,10 @@
             const today = new Date();
             
             if (appData.salaryType === 'irregular') {
-                // For irregular, we need to calculate based on saved nextPayday
-                // This is simplified - you might want to store history
                 if (!appData.nextPayday) return new Date(today.getFullYear(), today.getMonth(), 1);
                 
                 const nextPayday = new Date(appData.nextPayday);
                 if (nextPayday > today) {
-                    // Assume last payday was 30 days before next
                     const lastPayday = new Date(nextPayday);
                     lastPayday.setDate(lastPayday.getDate() - 30);
                     return lastPayday;
@@ -1207,6 +1293,103 @@
             const days = getDaysUntilNextPayday();
             const available = getAvailableBalance();
             return days > 0 ? available / days : 0;
+        }
+        
+        // Calculate expected recurring expenses
+        function getExpectedRecurringExpenses() {
+            const today = new Date();
+            const nextPayday = getNextPayday();
+            let total = 0;
+            
+            appData.recurringExpenses.forEach(recurring => {
+                if (!recurring.isActive) return;
+                
+                let currentDate = new Date(today);
+                currentDate.setDate(currentDate.getDate() + 1);
+                
+                while (currentDate <= nextPayday) {
+                    let shouldCount = false;
+                    
+                    if (recurring.pattern === 'daily') {
+                        shouldCount = true;
+                    } else if (recurring.pattern === 'weekly') {
+                        const dayOfWeek = currentDate.getDay();
+                        shouldCount = recurring.selectedDays.includes(dayOfWeek);
+                    } else if (recurring.pattern === 'monthly') {
+                        shouldCount = currentDate.getDate() === recurring.dayOfMonth;
+                    }
+                    
+                    if (shouldCount) {
+                        total += recurring.amount;
+                    }
+                    
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            });
+            
+            return total;
+        }
+        
+        function getNextPayday() {
+            const today = new Date();
+            
+            if (appData.salaryType === 'irregular') {
+                if (!appData.nextPayday) {
+                    const next = new Date(today);
+                    next.setDate(next.getDate() + 30);
+                    return next;
+                }
+                return new Date(appData.nextPayday);
+            } else {
+                const currentDay = today.getDate();
+                const currentMonth = today.getMonth();
+                const currentYear = today.getFullYear();
+                
+                if (currentDay >= appData.payday) {
+                    return new Date(currentYear, currentMonth + 1, appData.payday);
+                } else {
+                    return new Date(currentYear, currentMonth, appData.payday);
+                }
+            }
+        }
+        
+        function updatePredictionAlert() {
+            const container = document.getElementById('predictionAlert');
+            const available = getAvailableBalance();
+            const expected = getExpectedRecurringExpenses();
+            const finalBalance = available - expected;
+            
+            if (expected === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let alertClass = 'success';
+            let icon = 'fa-check-circle';
+            let message = '';
+            
+            if (finalBalance < 0) {
+                alertClass = 'danger';
+                icon = 'fa-exclamation-triangle';
+                message = `⚠️ <strong>تحذير!</strong> المصاريف الثابتة المتوقعة (${expected.toFixed(2)} ج) ستجعل رصيدك <strong>سالباً</strong> بقيمة ${Math.abs(finalBalance).toFixed(2)} ج. ستحتاج إلى ${Math.abs(finalBalance).toFixed(2)} جنيه إضافي!`;
+            } else if (finalBalance < appData.salary * 0.1) {
+                alertClass = 'warning';
+                icon = 'fa-exclamation-circle';
+                message = `⚠️ <strong>انتبه!</strong> بعد خصم المصاريف الثابتة المتوقعة (${expected.toFixed(2)} ج)، سيتبقى لك ${finalBalance.toFixed(2)} ج فقط. حاول تقليل المصروفات الإضافية.`;
+            } else {
+                alertClass = 'success';
+                icon = 'fa-thumbs-up';
+                message = `✅ <strong>جيد!</strong> المصاريف الثابتة المتوقعة (${expected.toFixed(2)} ج) ضمن الميزانية. سيتبقى لك ${finalBalance.toFixed(2)} ج بعد خصمها.`;
+            }
+            
+            container.innerHTML = `
+                <div class="prediction-alert ${alertClass}">
+                    <i class="fas ${icon} text-2xl"></i>
+                    <div>
+                        <p class="font-semibold">${message}</p>
+                    </div>
+                </div>
+            `;
         }
         
         // Recurring Expenses Management
@@ -1279,21 +1462,61 @@
                 isActive: true
             };
             
+            // If editing existing recurring expense, ask about applying changes to past
             if (id) {
-                const index = appData.recurringExpenses.findIndex(r => r.id === id);
-                appData.recurringExpenses[index] = recurring;
+                pendingRecurringUpdate = recurring;
+                closeRecurringModal();
+                document.getElementById('applyChangesModal').classList.add('active');
             } else {
                 appData.recurringExpenses.push(recurring);
+                saveData();
+                closeRecurringModal();
+                renderRecurringExpenses();
+                generateRecurringExpenses();
+                updateDashboard();
+                renderExpenses();
+                showToast('تم حفظ المصروف الثابت بنجاح!', 'success');
+            }
+        }
+        
+        function closeApplyChangesModal() {
+            document.getElementById('applyChangesModal').classList.remove('active');
+            pendingRecurringUpdate = null;
+        }
+        
+        function applyChangesToPast(applyToPast) {
+            if (!pendingRecurringUpdate) return;
+            
+            const recurring = pendingRecurringUpdate;
+            const index = appData.recurringExpenses.findIndex(r => r.id === recurring.id);
+            appData.recurringExpenses[index] = recurring;
+            
+            // If user wants to apply changes to past expenses
+            if (applyToPast) {
+                appData.expenses.forEach(expense => {
+                    if (expense.recurringId === recurring.id) {
+                        expense.name = recurring.name;
+                        expense.amount = recurring.amount;
+                        expense.category = recurring.category;
+                        expense.note = recurring.note;
+                    }
+                });
             }
             
             saveData();
-            closeRecurringModal();
+            closeApplyChangesModal();
             renderRecurringExpenses();
             generateRecurringExpenses();
             updateDashboard();
             renderExpenses();
+            renderReports();
             
-            showToast('تم حفظ المصروف الثابت بنجاح!', 'success');
+            const message = applyToPast 
+                ? 'تم تحديث المصروف الثابت وجميع المصاريف السابقة المرتبطة به!'
+                : 'تم تحديث المصروف الثابت! التعديلات ستطبق على المصاريف المستقبلية فقط.';
+            
+            showToast(message, 'success');
+            pendingRecurringUpdate = null;
         }
         
         function generateRecurringExpenses() {
@@ -1438,6 +1661,7 @@
             recurring.isActive = !recurring.isActive;
             saveData();
             renderRecurringExpenses();
+            updateDashboard();
             
             showToast(recurring.isActive ? 'تم تفعيل المصروف الثابت' : 'تم إيقاف المصروف الثابت', 'success');
         }
@@ -1445,10 +1669,7 @@
         function deleteRecurring(id) {
             if (!confirm('هل أنت متأكد من حذف هذا المصروف الثابت؟\nسيتم حذف جميع المصاريف المرتبطة به.')) return;
             
-            // Remove recurring expense
             appData.recurringExpenses = appData.recurringExpenses.filter(r => r.id !== id);
-            
-            // Remove all related expenses
             appData.expenses = appData.expenses.filter(e => e.recurringId !== id);
             
             saveData();
@@ -1463,14 +1684,13 @@
         function updateDashboard() {
             const available = getAvailableBalance();
             const days = getDaysUntilNextPayday();
-            const daily = getDailyAverage();
+            const expected = getExpectedRecurringExpenses();
             
             document.getElementById('availableBalance').textContent = available.toFixed(2);
             document.getElementById('emergencyFund').textContent = appData.emergencyFund.toFixed(2);
             document.getElementById('daysRemaining').textContent = days;
-            document.getElementById('dailyAverage').textContent = daily.toFixed(2);
+            document.getElementById('expectedRecurring').textContent = expected.toFixed(2);
             
-            // Update card colors based on status
             const balanceCard = document.getElementById('availableBalance').closest('.stat-card');
             const warningThreshold = appData.salary * 0.1;
             
@@ -1484,6 +1704,7 @@
                 balanceCard.className = 'card stat-card';
             }
             
+            updatePredictionAlert();
             renderRecentExpenses();
         }
         
