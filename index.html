@@ -915,6 +915,15 @@
                 </div>
                 
                 <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">
+                        <i class="fas fa-calendar-plus ml-1" style="color: #3b82f6;"></i>
+                        تاريخ بداية المصروف
+                    </label>
+                    <input type="date" id="recurringStartDate" required>
+                    <p class="text-xs mt-1" style="color: var(--text-secondary);">سيتم توليد الفواتير ابتداءً من هذا التاريخ</p>
+                </div>
+                
+                <div class="mb-3">
                     <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">الفئة</label>
                     <select id="recurringCategory" required>
                         <option value="مواصلات">مواصلات</option>
@@ -972,6 +981,8 @@
                     <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">يوم الشهر (1-31)</label>
                     <input type="number" id="recurringDayOfMonth" min="1" max="31" placeholder="مثال: 1">
                 </div>
+                
+                <input type="hidden" id="recurringEditId">
                 
                 <div class="flex gap-2">
                     <button type="submit" class="btn btn-primary flex-1">
@@ -1080,6 +1091,137 @@
                         حفظ التغييرات
                     </button>
                     <button type="button" onclick="closeModal('settingsModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Pause Recurring Modal -->
+    <div id="pauseRecurringModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-pause-circle ml-2" style="color: #f59e0b;"></i>
+                إيقاف مؤقت للمصروف الثابت
+            </h3>
+            <form onsubmit="handlePauseRecurring(event)">
+                <input type="hidden" id="pauseRecurringId">
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">سبب الإيقاف (اختياري)</label>
+                    <select id="pauseReason">
+                        <option value="إجازة">إجازة</option>
+                        <option value="عطلة">عطلة</option>
+                        <option value="مرض">مرض</option>
+                        <option value="سفر">سفر</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-pause"></i>
+                        إيقاف مؤقتاً
+                    </button>
+                    <button type="button" onclick="closeModal('pauseRecurringModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Resume Recurring Modal -->
+    <div id="resumeRecurringModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-play-circle ml-2" style="color: #10b981;"></i>
+                إعادة تشغيل المصروف الثابت
+            </h3>
+            <form onsubmit="handleResumeRecurring(event)">
+                <input type="hidden" id="resumeRecurringId">
+                
+                <div class="mb-4">
+                    <p class="text-sm mb-3" style="color: var(--text-secondary);" id="resumeRecurringMessage"></p>
+                    
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">كيف تريد المتابعة؟</label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2 p-2 border-2 rounded-lg cursor-pointer" style="border-color: var(--border-color);">
+                            <input type="radio" name="resumeOption" value="fromNow" checked class="mt-1">
+                            <div>
+                                <div class="font-semibold text-sm" style="color: var(--text-primary);">البدء من الآن فقط</div>
+                                <div class="text-xs" style="color: var(--text-secondary);">سيتم توليد الفواتير ابتداءً من اليوم</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-start gap-2 p-2 border-2 rounded-lg cursor-pointer" style="border-color: var(--border-color);">
+                            <input type="radio" name="resumeOption" value="generateMissed" class="mt-1">
+                            <div>
+                                <div class="font-semibold text-sm" style="color: var(--text-primary);">توليد الفواتير الفائتة</div>
+                                <div class="text-xs" style="color: var(--text-secondary);">سيتم إضافة جميع الفواتير منذ الإيقاف</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-play"></i>
+                        متابعة
+                    </button>
+                    <button type="button" onclick="closeModal('resumeRecurringModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Recurring Bills Modal -->
+    <div id="recurringBillsModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-file-invoice ml-2" style="color: #3b82f6;"></i>
+                الفواتير المولدة
+            </h3>
+            <div id="recurringBillsList" class="mb-4"></div>
+            <button onclick="closeModal('recurringBillsModal')" class="btn btn-secondary w-full">
+                <i class="fas fa-times"></i>
+                إغلاق
+            </button>
+        </div>
+    </div>
+    
+    <!-- Edit Single Bill Modal -->
+    <div id="editBillModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-edit ml-2" style="color: #3b82f6;"></i>
+                تعديل فاتورة واحدة
+            </h3>
+            <form onsubmit="handleEditSingleBill(event)">
+                <input type="hidden" id="editBillId">
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">المبلغ الجديد (جنيه)</label>
+                    <input type="number" id="editBillAmount" min="0" step="0.01" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">ملاحظة السبب</label>
+                    <textarea id="editBillNote" rows="2" placeholder="مثال: تغيير في السعر لهذا اليوم فقط"></textarea>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-save"></i>
+                        حفظ التعديل
+                    </button>
+                    <button type="button" onclick="closeModal('editBillModal')" class="btn btn-secondary flex-1">
                         <i class="fas fa-times"></i>
                         إلغاء
                     </button>
@@ -1387,6 +1529,8 @@
         }
         
         function openRecurringModal() {
+            document.getElementById('recurringEditId').value = '';
+            document.getElementById('recurringStartDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('recurringModal').classList.add('active');
         }
         
@@ -1523,7 +1667,10 @@
                 amount: parseFloat(document.getElementById('recurringAmount').value),
                 category: document.getElementById('recurringCategory').value,
                 pattern: pattern,
-                active: true
+                active: true,
+                startDate: document.getElementById('recurringStartDate').value,
+                pausedDate: null,
+                pauseReason: null
             };
             
             if (pattern === 'weekly') {
@@ -1533,7 +1680,25 @@
                 recurring.dayOfMonth = parseInt(document.getElementById('recurringDayOfMonth').value);
             }
             
-            appData.recurringExpenses.push(recurring);
+            const editId = document.getElementById('recurringEditId').value;
+            
+            if (editId) {
+                // Edit existing
+                const index = appData.recurringExpenses.findIndex(r => r.id === editId);
+                if (index !== -1) {
+                    recurring.id = editId;
+                    recurring.startDate = appData.recurringExpenses[index].startDate;
+                    recurring.pausedDate = appData.recurringExpenses[index].pausedDate;
+                    recurring.pauseReason = appData.recurringExpenses[index].pauseReason;
+                    appData.recurringExpenses[index] = recurring;
+                    showToast(`تم تعديل المصروف الثابت: ${recurring.name}`, 'success');
+                }
+            } else {
+                // Add new
+                appData.recurringExpenses.push(recurring);
+                showToast(`تم إضافة المصروف الثابت: ${recurring.name}`, 'success');
+            }
+            
             saveData();
             
             closeModal('recurringModal');
@@ -1541,9 +1706,8 @@
             updateDashboard();
             renderRecurringExpenses();
             
-            showToast(`تم إضافة المصروف الثابت: ${recurring.name}`, 'success');
-            
             event.target.reset();
+            document.getElementById('recurringEditId').value = '';
         }
         
         function handleAddToEmergency(event) {
@@ -1737,36 +1901,26 @@
         
         // Recurring Expenses Generation
         function generateRecurringExpenses() {
-            // Generate recurring expenses for the current month
             const today = new Date();
-            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
             
             appData.recurringExpenses.forEach(rec => {
-                if (!rec.active) return;
+                if (!rec.active || rec.pausedDate) return;
                 
-                // Check if already generated for this month
-                const alreadyGenerated = appData.expenses.some(exp => 
-                    exp.recurringId === rec.id && 
-                    new Date(exp.date).getMonth() === today.getMonth()
-                );
+                const startDate = rec.startDate ? new Date(rec.startDate) : new Date(today.getFullYear(), today.getMonth(), 1);
                 
-                if (alreadyGenerated) return;
-                
-                // Generate based on pattern
-                if (rec.pattern === 'daily') {
-                    for (let d = startOfMonth; d <= today; d.setDate(d.getDate() + 1)) {
+                // Generate from start date to today
+                for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+                    // Check if already generated for this date
+                    const alreadyGenerated = appData.expenses.some(exp => 
+                        exp.recurringId === rec.id && 
+                        exp.date === d.toISOString().split('T')[0]
+                    );
+                    
+                    if (alreadyGenerated) continue;
+                    
+                    // Check if should generate for this date
+                    if (shouldGenerateForDate(rec, new Date(d))) {
                         addGeneratedExpense(rec, new Date(d));
-                    }
-                } else if (rec.pattern === 'weekly' && rec.weekdays) {
-                    for (let d = new Date(startOfMonth); d <= today; d.setDate(d.getDate() + 1)) {
-                        if (rec.weekdays.includes(d.getDay())) {
-                            addGeneratedExpense(rec, new Date(d));
-                        }
-                    }
-                } else if (rec.pattern === 'monthly' && rec.dayOfMonth) {
-                    const monthlyDate = new Date(today.getFullYear(), today.getMonth(), rec.dayOfMonth);
-                    if (monthlyDate <= today) {
-                        addGeneratedExpense(rec, monthlyDate);
                     }
                 }
             });
@@ -1858,26 +2012,55 @@
                     patternText = `شهري في اليوم ${rec.dayOfMonth}`;
                 }
                 
+                const billsCount = appData.expenses.filter(exp => exp.recurringId === rec.id).length;
+                const totalAmount = appData.expenses.filter(exp => exp.recurringId === rec.id).reduce((sum, exp) => sum + exp.amount, 0);
+                
+                let statusBadge = '';
+                if (rec.pausedDate) {
+                    statusBadge = `<span class="text-xs px-2 py-1 rounded" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i class="fas fa-pause"></i> متوقف (${rec.pauseReason || 'بدون سبب'})</span>`;
+                } else if (rec.active) {
+                    statusBadge = `<span class="text-xs px-2 py-1 rounded" style="background: rgba(16, 185, 129, 0.15); color: #10b981;"><i class="fas fa-check-circle"></i> نشط</span>`;
+                }
+                
                 return `
-                    <div class="card mb-3" style="border-right: 3px solid #3b82f6;">
-                        <div class="flex justify-between items-start gap-2">
+                    <div class="card mb-3" style="border-right: 3px solid ${rec.pausedDate ? '#f59e0b' : '#3b82f6'};">
+                        <div class="flex justify-between items-start gap-2 mb-2">
                             <div class="flex-1">
-                                <div class="font-bold" style="color: var(--text-primary);">${rec.name}</div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <div class="font-bold" style="color: var(--text-primary);">${rec.name}</div>
+                                    ${statusBadge}
+                                </div>
                                 <div class="text-sm" style="color: var(--text-secondary);">
                                     ${rec.amount.toFixed(2)} ج • ${rec.category}
                                 </div>
                                 <div class="text-xs mt-1" style="color: var(--text-secondary);">
-                                    ${patternText}
+                                    ${patternText} • بداية: ${rec.startDate || 'غير محدد'}
                                 </div>
+                                ${billsCount > 0 ? `
+                                    <div class="text-xs mt-1 flex items-center gap-2" style="color: var(--text-secondary);">
+                                        <span><i class="fas fa-file-invoice"></i> ${billsCount} فاتورة</span>
+                                        <span>•</span>
+                                        <span>إجمالي: ${totalAmount.toFixed(2)} ج</span>
+                                    </div>
+                                ` : ''}
                             </div>
-                            <div class="text-left flex gap-2">
-                                <button onclick="toggleRecurringActive('${rec.id}')" class="btn ${rec.active ? 'btn-secondary' : 'btn-primary'}" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">
-                                    <i class="fas ${rec.active ? 'fa-pause' : 'fa-play'}"></i>
+                        </div>
+                        <div class="flex gap-2 flex-wrap">
+                            ${billsCount > 0 ? `
+                                <button onclick="viewRecurringBills('${rec.id}')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                                    <i class="fas fa-eye"></i> عرض الفواتير
                                 </button>
-                                <button onclick="deleteRecurring('${rec.id}')" class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                            ` : ''}
+                            <button onclick="editRecurring('${rec.id}')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                                <i class="fas fa-edit"></i> تعديل
+                            </button>
+                            <button onclick="toggleRecurringActive('${rec.id}')" class="btn ${rec.pausedDate ? 'btn-primary' : ''}" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; background: ${rec.pausedDate ? '' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;'}">
+                                <i class="fas ${rec.pausedDate ? 'fa-play' : 'fa-pause'}"></i>
+                                ${rec.pausedDate ? 'تشغيل' : 'إيقاف مؤقت'}
+                            </button>
+                            <button onclick="deleteRecurring('${rec.id}')" class="btn btn-danger" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
                         </div>
                     </div>
                 `;
@@ -1984,12 +2167,201 @@
         
         function toggleRecurringActive(id) {
             const recurring = appData.recurringExpenses.find(rec => rec.id === id);
+            if (!recurring) return;
+            
+            if (recurring.pausedDate) {
+                // Resume
+                document.getElementById('resumeRecurringId').value = id;
+                const pausedDate = new Date(recurring.pausedDate);
+                const today = new Date();
+                const daysPaused = Math.ceil((today - pausedDate) / (1000 * 60 * 60 * 24));
+                document.getElementById('resumeRecurringMessage').textContent = 
+                    `تم إيقاف "${recurring.name}" منذ ${daysPaused} يوم (${recurring.pausedDate})`;
+                document.getElementById('resumeRecurringModal').classList.add('active');
+            } else {
+                // Pause
+                document.getElementById('pauseRecurringId').value = id;
+                document.getElementById('pauseRecurringModal').classList.add('active');
+            }
+        }
+        
+        function handlePauseRecurring(event) {
+            event.preventDefault();
+            const id = document.getElementById('pauseRecurringId').value;
+            const reason = document.getElementById('pauseReason').value;
+            
+            const recurring = appData.recurringExpenses.find(rec => rec.id === id);
             if (recurring) {
-                recurring.active = !recurring.active;
+                recurring.pausedDate = new Date().toISOString().split('T')[0];
+                recurring.pauseReason = reason;
                 saveData();
                 renderRecurringExpenses();
                 updateDashboard();
-                showToast(recurring.active ? 'تم تفعيل المصروف الثابت' : 'تم إيقاف المصروف الثابت', 'success');
+                showToast(`تم إيقاف "${recurring.name}" مؤقتاً`, 'success');
+                closeModal('pauseRecurringModal');
+            }
+        }
+        
+        function handleResumeRecurring(event) {
+            event.preventDefault();
+            const id = document.getElementById('resumeRecurringId').value;
+            const option = document.querySelector('input[name="resumeOption"]:checked').value;
+            
+            const recurring = appData.recurringExpenses.find(rec => rec.id === id);
+            if (!recurring) return;
+            
+            if (option === 'generateMissed') {
+                // Generate missed bills
+                const pausedDate = new Date(recurring.pausedDate);
+                const today = new Date();
+                
+                for (let d = new Date(pausedDate); d <= today; d.setDate(d.getDate() + 1)) {
+                    if (shouldGenerateForDate(recurring, new Date(d))) {
+                        addGeneratedExpense(recurring, new Date(d));
+                    }
+                }
+                showToast(`تم توليد الفواتير الفائتة لـ "${recurring.name}"`, 'success');
+            }
+            
+            recurring.pausedDate = null;
+            recurring.pauseReason = null;
+            saveData();
+            renderRecurringExpenses();
+            updateDashboard();
+            renderExpenses();
+            showToast(`تم إعادة تشغيل "${recurring.name}"`, 'success');
+            closeModal('resumeRecurringModal');
+        }
+        
+        function shouldGenerateForDate(recurring, date) {
+            if (recurring.pattern === 'daily') {
+                return true;
+            } else if (recurring.pattern === 'weekly' && recurring.weekdays) {
+                return recurring.weekdays.includes(date.getDay());
+            } else if (recurring.pattern === 'monthly' && recurring.dayOfMonth) {
+                return date.getDate() === recurring.dayOfMonth;
+            }
+            return false;
+        }
+        
+        function editRecurring(id) {
+            const recurring = appData.recurringExpenses.find(rec => rec.id === id);
+            if (!recurring) return;
+            
+            document.getElementById('recurringEditId').value = id;
+            document.getElementById('recurringName').value = recurring.name;
+            document.getElementById('recurringAmount').value = recurring.amount;
+            document.getElementById('recurringCategory').value = recurring.category;
+            document.getElementById('recurringPattern').value = recurring.pattern;
+            document.getElementById('recurringStartDate').value = recurring.startDate || '';
+            
+            toggleRecurringOptions();
+            
+            if (recurring.pattern === 'weekly' && recurring.weekdays) {
+                recurring.weekdays.forEach(day => {
+                    const checkbox = document.querySelector(`input[name="weekdays"][value="${day}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            } else if (recurring.pattern === 'monthly' && recurring.dayOfMonth) {
+                document.getElementById('recurringDayOfMonth').value = recurring.dayOfMonth;
+            }
+            
+            document.getElementById('recurringModal').classList.add('active');
+        }
+        
+        function viewRecurringBills(recurringId) {
+            const recurring = appData.recurringExpenses.find(rec => rec.id === recurringId);
+            if (!recurring) return;
+            
+            const bills = appData.expenses.filter(exp => exp.recurringId === recurringId);
+            const container = document.getElementById('recurringBillsList');
+            
+            if (bills.length === 0) {
+                container.innerHTML = '<p class="text-center py-4 text-sm" style="color: var(--text-secondary);">لا توجد فواتير مولدة بعد</p>';
+            } else {
+                container.innerHTML = `
+                    <div class="mb-3 p-3 rounded-lg" style="background: rgba(59, 130, 246, 0.1);">
+                        <div class="font-bold mb-1" style="color: var(--text-primary);">${recurring.name}</div>
+                        <div class="text-sm" style="color: var(--text-secondary);">عدد الفواتير: ${bills.length} • الإجمالي: ${bills.reduce((sum, b) => sum + b.amount, 0).toFixed(2)} ج</div>
+                    </div>
+                    ${bills.map(bill => `
+                        <div class="expense-item recurring mb-2">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex-1">
+                                    <div class="text-sm font-bold" style="color: var(--text-primary);">${bill.date}</div>
+                                    <div class="text-xs" style="color: var(--text-secondary);">
+                                        ${bill.amount.toFixed(2)} ج
+                                        ${bill.note && bill.note !== 'تم إضافته تلقائياً من المصروف الثابت' ? `• ${bill.note}` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button onclick="openEditBill('${bill.id}')" class="text-xs px-2 py-1" style="color: #3b82f6;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteSingleBill('${bill.id}')" class="text-xs px-2 py-1" style="color: #ef4444;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            }
+            
+            document.getElementById('recurringBillsModal').classList.add('active');
+        }
+        
+        function openEditBill(billId) {
+            const bill = appData.expenses.find(exp => exp.id === billId);
+            if (!bill) return;
+            
+            document.getElementById('editBillId').value = billId;
+            document.getElementById('editBillAmount').value = bill.amount;
+            document.getElementById('editBillNote').value = bill.note || '';
+            
+            document.getElementById('editBillModal').classList.add('active');
+        }
+        
+        function handleEditSingleBill(event) {
+            event.preventDefault();
+            const billId = document.getElementById('editBillId').value;
+            const newAmount = parseFloat(document.getElementById('editBillAmount').value);
+            const newNote = document.getElementById('editBillNote').value;
+            
+            const bill = appData.expenses.find(exp => exp.id === billId);
+            if (bill) {
+                bill.amount = newAmount;
+                bill.note = newNote || bill.note;
+                saveData();
+                updateDashboard();
+                renderExpenses();
+                
+                // Refresh the bills list if it's open
+                if (bill.recurringId) {
+                    viewRecurringBills(bill.recurringId);
+                }
+                
+                showToast('تم تعديل الفاتورة بنجاح!', 'success');
+                closeModal('editBillModal');
+            }
+        }
+        
+        function deleteSingleBill(billId) {
+            if (confirm('هل تريد حذف هذه الفاتورة فقط؟ لن يتم حذف المصروف الثابت.')) {
+                const bill = appData.expenses.find(exp => exp.id === billId);
+                const recurringId = bill ? bill.recurringId : null;
+                
+                appData.expenses = appData.expenses.filter(exp => exp.id !== billId);
+                saveData();
+                updateDashboard();
+                renderExpenses();
+                
+                if (recurringId) {
+                    viewRecurringBills(recurringId);
+                    renderRecurringExpenses();
+                }
+                
+                showToast('تم حذف الفاتورة بنجاح!', 'success');
             }
         }
         
