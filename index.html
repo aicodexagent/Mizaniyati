@@ -1,0 +1,2557 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تطبيق ذكي لإدارة الميزانية الشخصية ومتابعة المصروفات اليومية">
+    <meta name="theme-color" content="#10b981">
+    
+    <title>ميزانيتي – صارف بذكاء</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" id="manifestPlaceholder">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- jsPDF & html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        :root {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #ffffff;
+            --bg-gradient-start: #f9fafb;
+            --bg-gradient-end: #e5e7eb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --accent-primary: #10b981;
+            --accent-secondary: #059669;
+            --card-bg: #ffffff;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --border-color: #e5e7eb;
+            --nav-bg: #ffffff;
+            --nav-active: #10b981;
+        }
+        
+        /* Dark Theme */
+        body.theme-dark {
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --bg-gradient-start: #111827;
+            --bg-gradient-end: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --accent-primary: #10b981;
+            --accent-secondary: #059669;
+            --card-bg: #1f2937;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --border-color: #374151;
+            --nav-bg: #1f2937;
+            --nav-active: #10b981;
+        }
+        
+        /* Simple Theme */
+        body.theme-simple {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-gradient-start: #ffffff;
+            --bg-gradient-end: #f5f5f5;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --accent-primary: #0066cc;
+            --accent-secondary: #0052a3;
+            --card-bg: #ffffff;
+            --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --border-color: #dddddd;
+            --nav-bg: #f5f5f5;
+            --nav-active: #0066cc;
+        }
+        
+        /* Anime Theme */
+        body.theme-anime {
+            --bg-primary: #fef3f8;
+            --bg-secondary: #fff0f5;
+            --bg-gradient-start: #fef3f8;
+            --bg-gradient-end: #ffe4f1;
+            --text-primary: #2d1b3d;
+            --text-secondary: #7c4a8d;
+            --accent-primary: #ff6bb5;
+            --accent-secondary: #ff4da6;
+            --card-bg: #ffffff;
+            --card-shadow: 0 8px 16px rgba(255, 107, 181, 0.2);
+            --border-color: #ffc9e3;
+            --nav-bg: #fff0f5;
+            --nav-active: #ff6bb5;
+        }
+        
+        /* LaLa3ba Theme */
+        body.theme-lala3ba {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #0f3460;
+            --text-primary: #f1f1f1;
+            --text-secondary: #a8a8a8;
+            --accent-primary: #e94560;
+            --accent-secondary: #c23653;
+            --card-bg: #16213e;
+            --card-shadow: 0 8px 16px rgba(233, 69, 96, 0.3);
+            --border-color: #533483;
+            --nav-bg: #16213e;
+            --nav-active: #e94560;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding-bottom: 80px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Anime Theme Background Pattern */
+        body.theme-anime::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 107, 181, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* LaLa3ba Theme Background Pattern */
+        body.theme-lala3ba::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(233, 69, 96, 0.03) 10px, rgba(233, 69, 96, 0.03) 20px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+            border: 1px solid var(--border-color);
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.15);
+        }
+        
+        body.theme-anime .card {
+            border: 2px solid var(--border-color);
+            box-shadow: 0 6px 12px rgba(255, 107, 181, 0.15);
+        }
+        
+        body.theme-lala3ba .card {
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(83, 52, 131, 0.1) 100%);
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .stat-card.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        .stat-card.purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+            border: 1px solid var(--border-color);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px -3px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.6rem;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            right: 2rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 400px;
+        }
+        
+        .toast.active {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .expense-item {
+            background: var(--card-bg);
+            padding: 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            border-right: 3px solid #10b981;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+        }
+        
+        .expense-item:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .expense-item.emergency {
+            border-right-color: #ef4444;
+        }
+        
+        .expense-item.recurring {
+            border-right-color: #3b82f6;
+        }
+        
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--nav-bg);
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0.5rem 0;
+            z-index: 100;
+            border-top: 1px solid var(--border-color);
+            transition: background 0.3s ease;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.4rem 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 10px;
+            min-width: 60px;
+        }
+        
+        .nav-item i {
+            font-size: 1.3rem;
+            transition: transform 0.2s;
+        }
+        
+        .nav-item span {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .nav-item.active {
+            color: var(--nav-active);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        body.theme-anime .nav-item.active {
+            background: rgba(255, 107, 181, 0.15);
+        }
+        
+        body.theme-lala3ba .nav-item.active {
+            background: rgba(233, 69, 96, 0.15);
+        }
+        
+        .nav-item:hover i {
+            transform: scale(1.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .day-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.6rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        
+        .day-checkbox input:checked + label {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+        
+        @media (max-width: 640px) {
+            .modal-content {
+                padding: 1.2rem;
+            }
+            
+            .toast {
+                left: 1rem;
+                right: 1rem;
+                bottom: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Setup Screen -->
+    <div id="setupScreen" class="hidden p-4">
+        <div class="max-w-md mx-auto">
+            <div class="card text-center mb-4">
+                <i class="fas fa-wallet text-5xl mb-3" style="color: #10b981;"></i>
+                <h1 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">ميزانيتي</h1>
+                <p style="color: var(--text-secondary);">صارف بذكاء، وفّر بسهولة</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">إعداد الحساب</h2>
+                
+                <form id="setupForm" onsubmit="handleSetup(event)">
+                    <div class="mb-3">
+                        <label class="block font-semibold mb-2" style="color: var(--text-primary); font-size: 0.9rem;">
+                            <i class="fas fa-user-tag ml-2" style="color: #8b5cf6;"></i>
+                            نوع المستخدم
+                        </label>
+                        <select id="setupUserType" onchange="toggleSetupUserType()" required>
+                            <option value="employee">موظف براتب منتظم</option>
+                            <option value="freelancer">عامل حر/غير منتظم</option>
+                        </select>
+                    </div>
+                    
+                    <div id="setupEmployeeSection">
+                        <div class="mb-3">
+                            <label class="block font-semibold mb-2" style="color: var(--text-primary); font-size: 0.9rem;">
+                                <i class="fas fa-money-bill-wave ml-2" style="color: #10b981;"></i>
+                                الراتب الشهري (جنيه)
+                            </label>
+                            <input type="number" id="setupSalary" min="0" step="0.01" placeholder="مثال: 4000">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="block font-semibold mb-2" style="color: var(--text-primary); font-size: 0.9rem;">
+                                <i class="fas fa-calendar-check ml-2" style="color: #3b82f6;"></i>
+                                نوع الراتب
+                            </label>
+                            <select id="setupSalaryType" onchange="togglePaydayInput()" required>
+                                <option value="fixed">منتظم (يوم محدد كل شهر)</option>
+                                <option value="irregular">غير منتظم</option>
+                            </select>
+                        </div>
+                        
+                        <div id="fixedPaydaySection" class="mb-3">
+                            <label class="block font-semibold mb-2" style="color: var(--text-primary); font-size: 0.9rem;">
+                                <i class="fas fa-calendar-day ml-2" style="color: #3b82f6;"></i>
+                                يوم نزول الراتب (من 1 إلى 31)
+                            </label>
+                            <input type="number" id="setupPayday" min="1" max="31" placeholder="مثال: 25" value="25">
+                        </div>
+                        
+                        <div id="irregularPaydaySection" class="mb-3 hidden">
+                            <label class="block font-semibold mb-2" style="color: var(--text-primary); font-size: 0.9rem;">
+                                <i class="fas fa-calendar-alt ml-2" style="color: #3b82f6;"></i>
+                                تاريخ الراتب القادم
+                            </label>
+                            <input type="date" id="setupNextPayday">
+                        </div>
+                    </div>
+                    
+                    <div id="setupFreelancerSection" class="hidden mb-3">
+                        <div class="p-3 rounded-lg" style="background: rgba(59, 130, 246, 0.1);">
+                            <p class="text-sm" style="color: var(--text-primary);">
+                                <i class="fas fa-info-circle ml-1"></i>
+                                كعامل حر، يمكنك إضافة إيراداتك يدوياً من لوحة التحكم.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="block font-semibold mb-2" style="color: var(--text-primary); font-size: 0.9rem;">
+                            <i class="fas fa-shield-alt ml-2" style="color: #ef4444;"></i>
+                            المبلغ الاحتياطي الأولي (اختياري)
+                        </label>
+                        <input type="number" id="setupEmergency" min="0" step="0.01" placeholder="افتراضي: 0" value="0">
+                    </div>
+                    
+                    <div class="mb-4 p-3 rounded-lg" style="background: rgba(16, 185, 129, 0.1);">
+                        <label class="flex items-start gap-2 cursor-pointer mb-2">
+                            <input type="checkbox" id="setupAutoSave" class="w-4 h-4 mt-1" onchange="toggleAutoSaveSetup()">
+                            <div class="flex-1">
+                                <span class="font-semibold block mb-1" style="color: var(--text-primary); font-size: 0.9rem;">
+                                    <i class="fas fa-piggy-bank" style="color: #10b981;"></i>
+                                    تفعيل الادخار التلقائي
+                                </span>
+                                <span class="text-xs" style="color: var(--text-secondary);">يتم خصم نسبة تلقائياً للاحتياطي</span>
+                            </div>
+                        </label>
+                        <div id="setupAutoSaveOptions" class="hidden mr-6">
+                            <label class="block font-semibold mb-2" style="color: var(--text-primary); font-size: 0.85rem;">
+                                النسبة المئوية للادخار
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <input type="range" id="setupAutoSavePercentage" min="5" max="50" value="10" step="5" class="flex-1" oninput="updateAutoSavePreview()">
+                                <span id="setupAutoSavePreviewPercent" class="text-lg font-bold w-12 text-center" style="color: #10b981;">10%</span>
+                            </div>
+                            <p class="text-xs mt-2" id="setupAutoSavePreviewText" style="color: var(--text-secondary);">
+                                مثال: من راتب 4000 ج، سيتم ادخار 400 ج تلقائياً
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="fas fa-check-circle"></i>
+                        ابدأ الآن
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main App -->
+    <div id="mainApp" class="hidden p-4">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h1 class="text-2xl font-bold flex items-center gap-2" style="color: var(--text-primary);">
+                        <i class="fas fa-wallet" style="color: #10b981;"></i>
+                        ميزانيتي
+                    </h1>
+                    <p class="text-sm" style="color: var(--text-secondary);">صارف بذكاء، وفّر بسهولة</p>
+                </div>
+                <button onclick="openSettings()" class="btn btn-secondary">
+                    <i class="fas fa-cog"></i>
+                    الإعدادات
+                </button>
+            </div>
+            
+            <!-- Theme Selector -->
+            <div class="card mb-4">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <label class="text-sm font-semibold flex items-center gap-2" style="color: var(--text-primary);">
+                        <i class="fas fa-palette" style="color: #8b5cf6;"></i>
+                        الثيم:
+                    </label>
+                    <select id="themeSelector" onchange="changeTheme(this.value)" class="flex-1 min-w-[180px]">
+                        <option value="light">الوضع الفاتح 🌞</option>
+                        <option value="dark">الوضع الداكن 🌙</option>
+                        <option value="simple">الثيم البسيط 📄</option>
+                        <option value="anime">ثيم الأنمي 🎀</option>
+                        <option value="lala3ba">ثيم اللعبة 🎮</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content active">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
+                    <div class="card stat-card info text-center">
+                        <div class="text-xs opacity-90 mb-1" id="totalIncomeLabel">الراتب الشهري</div>
+                        <div class="text-xl font-bold" id="totalIncome">0</div>
+                        <div class="text-xs opacity-80">جنيه</div>
+                    </div>
+                    
+                    <div class="card stat-card text-center">
+                        <div class="text-xs opacity-90 mb-1">الرصيد المتاح</div>
+                        <div class="text-xl font-bold" id="availableBalance">0</div>
+                        <div class="text-xs opacity-80">جنيه</div>
+                    </div>
+                    
+                    <div class="card stat-card purple text-center">
+                        <div class="text-xs opacity-90 mb-1">الاحتياطي</div>
+                        <div class="text-xl font-bold" id="emergencyFund">0</div>
+                        <div class="text-xs opacity-80" id="autoSaveInfo">جنيه</div>
+                    </div>
+                    
+                    <div class="card stat-card warning text-center">
+                        <div class="text-xs opacity-90 mb-1" id="daysRemainingLabel">الأيام المتبقية</div>
+                        <div class="text-xl font-bold" id="daysRemaining">0</div>
+                        <div class="text-xs opacity-80">يوم</div>
+                    </div>
+                    
+                    <div class="card stat-card danger text-center">
+                        <div class="text-xs opacity-90 mb-1">المصاريف الثابتة</div>
+                        <div class="text-xl font-bold" id="expectedRecurring">0</div>
+                        <div class="text-xs opacity-80">متوقعة</div>
+                    </div>
+                </div>
+                
+                <!-- Prediction Alert -->
+                <div id="predictionAlert"></div>
+                
+                <!-- Actions -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <button onclick="openExpenseModal()" class="btn btn-primary w-full">
+                        <i class="fas fa-minus-circle"></i>
+                        مصروف
+                    </button>
+                    
+                    <button onclick="openIncomeModal()" class="btn w-full" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white;" id="addIncomeBtn">
+                        <i class="fas fa-plus-circle"></i>
+                        إيراد
+                    </button>
+                    
+                    <button onclick="openRecurringModal()" class="btn btn-secondary w-full">
+                        <i class="fas fa-sync-alt"></i>
+                        ثابت
+                    </button>
+                    
+                    <button onclick="openAddToEmergencyModal()" class="btn btn-secondary w-full">
+                        <i class="fas fa-piggy-bank"></i>
+                        احتياطي
+                    </button>
+                </div>
+                
+                <!-- Recent Expenses -->
+                <div class="card">
+                    <h3 class="text-lg font-bold mb-3" style="color: var(--text-primary);">
+                        <i class="fas fa-history ml-2" style="color: #10b981;"></i>
+                        آخر المصروفات
+                    </h3>
+                    <div id="recentExpenses"></div>
+                </div>
+            </div>
+            
+            <!-- Expenses Tab -->
+            <div id="expensesTab" class="tab-content">
+                <div class="card mb-3">
+                    <div class="flex justify-between items-center mb-3 flex-wrap gap-3">
+                        <h3 class="text-lg font-bold" style="color: var(--text-primary);">
+                            <i class="fas fa-receipt ml-2" style="color: #10b981;"></i>
+                            جميع المصروفات
+                        </h3>
+                        <div class="flex gap-2 flex-wrap">
+                            <select id="filterCategory" onchange="renderExpenses()" style="width: 140px; font-size: 0.85rem;">
+                                <option value="all">جميع الفئات</option>
+                                <option value="مواصلات">مواصلات</option>
+                                <option value="أكل">أكل</option>
+                                <option value="فواتير">فواتير</option>
+                                <option value="ترفيه">ترفيه</option>
+                                <option value="طوارئ">طوارئ</option>
+                                <option value="ادخار">ادخار</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                            <select id="filterType" onchange="renderExpenses()" style="width: 120px; font-size: 0.85rem;">
+                                <option value="all">جميع الأنواع</option>
+                                <option value="regular">عادية</option>
+                                <option value="recurring">ثابتة</option>
+                                <option value="emergency">طارئة</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="allExpenses"></div>
+                </div>
+            </div>
+            
+            <!-- Recurring Tab -->
+            <div id="recurringTab" class="tab-content">
+                <div class="mb-3">
+                    <button onclick="openRecurringModal()" class="btn btn-primary w-full">
+                        <i class="fas fa-plus-circle"></i>
+                        إضافة مصروف ثابت جديد
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h3 class="text-lg font-bold mb-3" style="color: var(--text-primary);">
+                        <i class="fas fa-list ml-2" style="color: #3b82f6;"></i>
+                        قائمة المصاريف الثابتة
+                    </h3>
+                    <div id="recurringExpensesList"></div>
+                </div>
+            </div>
+            
+            <!-- Reports Tab -->
+            <div id="reportsTab" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    <div class="card">
+                        <h3 class="text-lg font-bold mb-3" style="color: var(--text-primary);">
+                            <i class="fas fa-chart-pie ml-2" style="color: #10b981;"></i>
+                            توزيع المصروفات
+                        </h3>
+                        <canvas id="expensesChart" style="max-height: 250px;"></canvas>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-lg font-bold mb-3" style="color: var(--text-primary);">
+                            <i class="fas fa-calculator ml-2" style="color: #3b82f6;"></i>
+                            ملخص الشهر
+                        </h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center p-2 rounded-lg" style="background: var(--bg-secondary);">
+                                <span class="font-semibold text-sm" style="color: var(--text-primary);">الراتب الشهري</span>
+                                <span class="text-lg font-bold" style="color: #10b981;" id="reportSalary">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 rounded-lg" style="background: var(--bg-secondary);">
+                                <span class="font-semibold text-sm" style="color: var(--text-primary);">إجمالي الصرف</span>
+                                <span class="text-lg font-bold" style="color: #ef4444;" id="reportTotalExpenses">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 rounded-lg" style="background: var(--bg-secondary);">
+                                <span class="font-semibold text-sm" style="color: var(--text-primary);">المتبقي</span>
+                                <span class="text-lg font-bold" style="color: #3b82f6;" id="reportRemaining">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 rounded-lg" style="background: var(--bg-secondary);">
+                                <span class="font-semibold text-sm" style="color: var(--text-primary);">الاحتياطي</span>
+                                <span class="text-lg font-bold" style="color: #f59e0b;" id="reportEmergency">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                    <button onclick="exportPDF()" class="btn btn-primary w-full">
+                        <i class="fas fa-file-pdf"></i>
+                        تصدير PDF
+                    </button>
+                    
+                    <button onclick="exportToExcel()" class="btn w-full" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white;">
+                        <i class="fas fa-file-excel"></i>
+                        تصدير Excel
+                    </button>
+                    
+                    <button onclick="shareReport()" class="btn btn-secondary w-full">
+                        <i class="fas fa-share-alt"></i>
+                        مشاركة
+                    </button>
+                </div>
+                
+                <div class="card" style="background: rgba(59, 130, 246, 0.1);">
+                    <h3 class="text-base font-bold mb-3" style="color: var(--text-primary);">
+                        <i class="fas fa-database ml-2" style="color: #3b82f6;"></i>
+                        النسخ الاحتياطي
+                    </h3>
+                    <p class="mb-3 text-sm" style="color: var(--text-secondary);">
+                        احفظ نسخة من جميع بياناتك واستعدها في أي وقت.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <button onclick="exportData()" class="btn btn-primary w-full">
+                            <i class="fas fa-download"></i>
+                            تصدير JSON
+                        </button>
+                        
+                        <button onclick="triggerImportData()" class="btn btn-secondary w-full">
+                            <i class="fas fa-upload"></i>
+                            استيراد JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    
+    <!-- Expense Modal -->
+    <div id="expenseModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-minus-circle ml-2" style="color: #ef4444;"></i>
+                إضافة مصروف
+            </h3>
+            <form onsubmit="handleAddExpense(event)">
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">اسم المصروف</label>
+                    <input type="text" id="expenseName" required placeholder="مثال: مواصلات اليوم">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">المبلغ (جنيه)</label>
+                    <input type="number" id="expenseAmount" min="0" step="0.01" required placeholder="0.00">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">التاريخ</label>
+                    <input type="date" id="expenseDate" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">الفئة</label>
+                    <select id="expenseCategory" required>
+                        <option value="مواصلات">مواصلات</option>
+                        <option value="أكل">أكل</option>
+                        <option value="فواتير">فواتير</option>
+                        <option value="ترفيه">ترفيه</option>
+                        <option value="طوارئ">طوارئ</option>
+                        <option value="ادخار">ادخار</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="expenseIsEmergency" class="w-4 h-4">
+                        <span class="font-semibold text-sm" style="color: var(--text-primary);">صرف من الاحتياطي</span>
+                    </label>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">ملاحظات (اختياري)</label>
+                    <textarea id="expenseNote" rows="2" placeholder="أي ملاحظات إضافية..."></textarea>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-check"></i>
+                        حفظ
+                    </button>
+                    <button type="button" onclick="closeModal('expenseModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Income Modal -->
+    <div id="incomeModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-plus-circle ml-2" style="color: #10b981;"></i>
+                إضافة إيراد
+            </h3>
+            <form onsubmit="handleAddIncome(event)">
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">اسم الإيراد</label>
+                    <input type="text" id="incomeName" required placeholder="مثال: عمل يومي">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">المبلغ (جنيه)</label>
+                    <input type="number" id="incomeAmount" min="0" step="0.01" required placeholder="0.00">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">التاريخ</label>
+                    <input type="date" id="incomeDate" required>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-check"></i>
+                        حفظ
+                    </button>
+                    <button type="button" onclick="closeModal('incomeModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Recurring Expense Modal -->
+    <div id="recurringModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-sync-alt ml-2" style="color: #3b82f6;"></i>
+                مصروف ثابت متكرر
+            </h3>
+            <form onsubmit="handleAddRecurring(event)">
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">اسم المصروف الثابت</label>
+                    <input type="text" id="recurringName" required placeholder="مثال: مواصلات الشغل">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">المبلغ (جنيه)</label>
+                    <input type="number" id="recurringAmount" min="0" step="0.01" required placeholder="0.00">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">
+                        <i class="fas fa-calendar-plus ml-1" style="color: #3b82f6;"></i>
+                        تاريخ بداية المصروف
+                    </label>
+                    <input type="date" id="recurringStartDate" required>
+                    <p class="text-xs mt-1" style="color: var(--text-secondary);">سيتم توليد الفواتير ابتداءً من هذا التاريخ</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">الفئة</label>
+                    <select id="recurringCategory" required>
+                        <option value="مواصلات">مواصلات</option>
+                        <option value="أكل">أكل</option>
+                        <option value="فواتير">فواتير</option>
+                        <option value="ترفيه">ترفيه</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">نمط التكرار</label>
+                    <select id="recurringPattern" onchange="toggleRecurringOptions()" required>
+                        <option value="daily">يومي</option>
+                        <option value="weekly">أسبوعي</option>
+                        <option value="monthly">شهري</option>
+                    </select>
+                </div>
+                
+                <div id="weeklyOptions" class="mb-3 hidden">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">أيام الأسبوع</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="weekdays" value="0">
+                            الأحد
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="weekdays" value="1">
+                            الاثنين
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="weekdays" value="2">
+                            الثلاثاء
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="weekdays" value="3">
+                            الأربعاء
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="weekdays" value="4">
+                            الخميس
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="weekdays" value="5">
+                            الجمعة
+                        </label>
+                        <label class="day-checkbox">
+                            <input type="checkbox" name="weekdays" value="6">
+                            السبت
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="monthlyOptions" class="mb-3 hidden">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">يوم الشهر (1-31)</label>
+                    <input type="number" id="recurringDayOfMonth" min="1" max="31" placeholder="مثال: 1">
+                </div>
+                
+                <input type="hidden" id="recurringEditId">
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-check"></i>
+                        حفظ
+                    </button>
+                    <button type="button" onclick="closeModal('recurringModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add to Emergency Modal -->
+    <div id="emergencyModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-piggy-bank ml-2" style="color: #8b5cf6;"></i>
+                إدارة الاحتياطي
+            </h3>
+            <form onsubmit="handleAddToEmergency(event)">
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">العملية</label>
+                    <select id="emergencyAction" required>
+                        <option value="add">إضافة للاحتياطي</option>
+                        <option value="withdraw">سحب من الاحتياطي</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">المبلغ (جنيه)</label>
+                    <input type="number" id="emergencyAmount" min="0" step="0.01" required placeholder="0.00">
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-check"></i>
+                        تنفيذ
+                    </button>
+                    <button type="button" onclick="closeModal('emergencyModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-cog ml-2" style="color: #8b5cf6;"></i>
+                الإعدادات
+            </h3>
+            <form onsubmit="handleUpdateSettings(event)">
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">نوع المستخدم</label>
+                    <select id="settingsUserType" onchange="toggleSettingsUserType()">
+                        <option value="employee">موظف براتب منتظم</option>
+                        <option value="freelancer">عامل حر/غير منتظم</option>
+                    </select>
+                </div>
+                
+                <div id="settingsEmployeeSection">
+                    <div class="mb-3">
+                        <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">الراتب الشهري</label>
+                        <input type="number" id="settingsSalary" min="0" step="0.01">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">نوع الراتب</label>
+                        <select id="settingsSalaryType" onchange="toggleSettingsPayday()">
+                            <option value="fixed">منتظم</option>
+                            <option value="irregular">غير منتظم</option>
+                        </select>
+                    </div>
+                    
+                    <div id="settingsFixedPayday" class="mb-3">
+                        <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">يوم نزول الراتب</label>
+                        <input type="number" id="settingsPayday" min="1" max="31">
+                    </div>
+                    
+                    <div id="settingsIrregularPayday" class="mb-3 hidden">
+                        <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">تاريخ الراتب القادم</label>
+                        <input type="date" id="settingsNextPayday">
+                    </div>
+                </div>
+                
+                <div class="mb-3 p-3 rounded-lg" style="background: rgba(16, 185, 129, 0.1);">
+                    <label class="flex items-center gap-2 cursor-pointer mb-2">
+                        <input type="checkbox" id="settingsAutoSave" class="w-4 h-4" onchange="toggleSettingsAutoSave()">
+                        <span class="font-semibold text-sm" style="color: var(--text-primary);">الادخار التلقائي</span>
+                    </label>
+                    <div id="settingsAutoSaveOptions" class="hidden">
+                        <label class="block font-semibold mb-2 text-xs" style="color: var(--text-primary);">النسبة %</label>
+                        <input type="number" id="settingsAutoSavePercentage" min="5" max="50" step="5">
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-save"></i>
+                        حفظ التغييرات
+                    </button>
+                    <button type="button" onclick="closeModal('settingsModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Pause Recurring Modal -->
+    <div id="pauseRecurringModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-pause-circle ml-2" style="color: #f59e0b;"></i>
+                إيقاف مؤقت للمصروف الثابت
+            </h3>
+            <form onsubmit="handlePauseRecurring(event)">
+                <input type="hidden" id="pauseRecurringId">
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">سبب الإيقاف (اختياري)</label>
+                    <select id="pauseReason">
+                        <option value="إجازة">إجازة</option>
+                        <option value="عطلة">عطلة</option>
+                        <option value="مرض">مرض</option>
+                        <option value="سفر">سفر</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-pause"></i>
+                        إيقاف مؤقتاً
+                    </button>
+                    <button type="button" onclick="closeModal('pauseRecurringModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Resume Recurring Modal -->
+    <div id="resumeRecurringModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-play-circle ml-2" style="color: #10b981;"></i>
+                إعادة تشغيل المصروف الثابت
+            </h3>
+            <form onsubmit="handleResumeRecurring(event)">
+                <input type="hidden" id="resumeRecurringId">
+                
+                <div class="mb-4">
+                    <p class="text-sm mb-3" style="color: var(--text-secondary);" id="resumeRecurringMessage"></p>
+                    
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">كيف تريد المتابعة؟</label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2 p-2 border-2 rounded-lg cursor-pointer" style="border-color: var(--border-color);">
+                            <input type="radio" name="resumeOption" value="fromNow" checked class="mt-1">
+                            <div>
+                                <div class="font-semibold text-sm" style="color: var(--text-primary);">البدء من الآن فقط</div>
+                                <div class="text-xs" style="color: var(--text-secondary);">سيتم توليد الفواتير ابتداءً من اليوم</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-start gap-2 p-2 border-2 rounded-lg cursor-pointer" style="border-color: var(--border-color);">
+                            <input type="radio" name="resumeOption" value="generateMissed" class="mt-1">
+                            <div>
+                                <div class="font-semibold text-sm" style="color: var(--text-primary);">توليد الفواتير الفائتة</div>
+                                <div class="text-xs" style="color: var(--text-secondary);">سيتم إضافة جميع الفواتير منذ الإيقاف</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-play"></i>
+                        متابعة
+                    </button>
+                    <button type="button" onclick="closeModal('resumeRecurringModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Recurring Bills Modal -->
+    <div id="recurringBillsModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-file-invoice ml-2" style="color: #3b82f6;"></i>
+                الفواتير المولدة
+            </h3>
+            <div id="recurringBillsList" class="mb-4"></div>
+            <button onclick="closeModal('recurringBillsModal')" class="btn btn-secondary w-full">
+                <i class="fas fa-times"></i>
+                إغلاق
+            </button>
+        </div>
+    </div>
+    
+    <!-- Edit Single Bill Modal -->
+    <div id="editBillModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-edit ml-2" style="color: #3b82f6;"></i>
+                تعديل فاتورة واحدة
+            </h3>
+            <form onsubmit="handleEditSingleBill(event)">
+                <input type="hidden" id="editBillId">
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">المبلغ الجديد (جنيه)</label>
+                    <input type="number" id="editBillAmount" min="0" step="0.01" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2 text-sm" style="color: var(--text-primary);">ملاحظة السبب</label>
+                    <textarea id="editBillNote" rows="2" placeholder="مثال: تغيير في السعر لهذا اليوم فقط"></textarea>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-save"></i>
+                        حفظ التعديل
+                    </button>
+                    <button type="button" onclick="closeModal('editBillModal')" class="btn btn-secondary flex-1">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Import File Input (Hidden) -->
+    <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+    
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+    
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('dashboard', this)">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('expenses', this)">
+            <i class="fas fa-receipt"></i>
+            <span>المصروفات</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('recurring', this)">
+            <i class="fas fa-sync-alt"></i>
+            <span>الثابتة</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('reports', this)">
+            <i class="fas fa-chart-line"></i>
+            <span>التقارير</span>
+        </div>
+    </nav>
+    
+    <script>
+        // Data Structure
+        let appData = {
+            userType: 'employee',
+            salary: 0,
+            salaryType: 'fixed',
+            payday: 25,
+            nextPayday: null,
+            emergencyFund: 0,
+            autoSaveEnabled: false,
+            autoSavePercentage: 10,
+            expenses: [],
+            recurringExpenses: [],
+            incomes: [],
+            theme: 'light'
+        };
+        
+        let currentChart = null;
+        
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            registerServiceWorker();
+            createManifest();
+            
+            if (appData.theme) {
+                applyTheme(appData.theme);
+            }
+            
+            if (!appData.salary && appData.userType !== 'freelancer' && appData.incomes.length === 0) {
+                showSetupScreen();
+            } else {
+                showMainApp();
+                generateRecurringExpenses();
+                updateDashboard();
+                renderExpenses();
+                renderReports();
+                renderRecurringExpenses();
+            }
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('expenseDate').value = today;
+            document.getElementById('incomeDate').value = today;
+        });
+        
+        // PWA Functions
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'mizaniyati-v1';
+                    const urlsToCache = ['/'];
+                    
+                    self.addEventListener('install', event => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+                        );
+                    });
+                    
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(
+                            caches.match(event.request).then(response => response || fetch(event.request))
+                        );
+                    });
+                `;
+                
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl).then(
+                    reg => console.log('Service Worker registered'),
+                    err => console.log('Service Worker registration failed:', err)
+                );
+            }
+        }
+        
+        function createManifest() {
+            const manifest = {
+                "name": "ميزانيتي – صارف بذكاء",
+                "short_name": "ميزانيتي",
+                "start_url": "/",
+                "display": "standalone",
+                "background_color": "#f9fafb",
+                "theme_color": "#10b981",
+                "orientation": "portrait",
+                "icons": [
+                    {
+                        "src": "https://via.placeholder.com/192x192.png?text=💰",
+                        "sizes": "192x192",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://via.placeholder.com/512x512.png?text=💰",
+                        "sizes": "512x512",
+                        "type": "image/png"
+                    }
+                ]
+            };
+            
+            const stringManifest = JSON.stringify(manifest);
+            const blob = new Blob([stringManifest], { type: 'application/json' });
+            const manifestURL = URL.createObjectURL(blob);
+            document.getElementById('manifestPlaceholder').setAttribute('href', manifestURL);
+        }
+        
+        // Data Management
+        function loadData() {
+            const saved = localStorage.getItem('mizaniyati');
+            if (saved) {
+                appData = JSON.parse(saved);
+                if (!appData.salaryType) appData.salaryType = 'fixed';
+                if (!appData.recurringExpenses) appData.recurringExpenses = [];
+                if (!appData.userType) appData.userType = 'employee';
+                if (!appData.incomes) appData.incomes = [];
+                if (appData.autoSaveEnabled === undefined) appData.autoSaveEnabled = false;
+                if (!appData.autoSavePercentage) appData.autoSavePercentage = 10;
+                if (!appData.theme) appData.theme = 'light';
+            }
+        }
+        
+        function saveData() {
+            localStorage.setItem('mizaniyati', JSON.stringify(appData));
+        }
+        
+        // Theme Management
+        function changeTheme(theme) {
+            appData.theme = theme;
+            saveData();
+            applyTheme(theme);
+            showToast(`تم تطبيق ${getThemeName(theme)} بنجاح! ✨`, 'success');
+        }
+        
+        function applyTheme(theme) {
+            const body = document.body;
+            body.className = body.className.replace(/theme-\w+/g, '');
+            
+            if (theme !== 'light') {
+                body.classList.add('theme-' + theme);
+            }
+            
+            document.getElementById('themeSelector').value = theme;
+        }
+        
+        function getThemeName(theme) {
+            const names = {
+                light: 'الوضع الفاتح',
+                dark: 'الوضع الداكن',
+                simple: 'الثيم البسيط',
+                anime: 'ثيم الأنمي',
+                lala3ba: 'ثيم اللعبة'
+            };
+            return names[theme] || 'الوضع الفاتح';
+        }
+        
+        // Screen Navigation
+        function showSetupScreen() {
+            document.getElementById('setupScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+        
+        function showMainApp() {
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+        }
+        
+        // Setup Functions
+        function toggleSetupUserType() {
+            const userType = document.getElementById('setupUserType').value;
+            if (userType === 'freelancer') {
+                document.getElementById('setupEmployeeSection').classList.add('hidden');
+                document.getElementById('setupFreelancerSection').classList.remove('hidden');
+            } else {
+                document.getElementById('setupEmployeeSection').classList.remove('hidden');
+                document.getElementById('setupFreelancerSection').classList.add('hidden');
+            }
+        }
+        
+        function togglePaydayInput() {
+            const salaryType = document.getElementById('setupSalaryType').value;
+            if (salaryType === 'irregular') {
+                document.getElementById('fixedPaydaySection').classList.add('hidden');
+                document.getElementById('irregularPaydaySection').classList.remove('hidden');
+            } else {
+                document.getElementById('fixedPaydaySection').classList.remove('hidden');
+                document.getElementById('irregularPaydaySection').classList.add('hidden');
+            }
+        }
+        
+        function toggleAutoSaveSetup() {
+            const enabled = document.getElementById('setupAutoSave').checked;
+            if (enabled) {
+                document.getElementById('setupAutoSaveOptions').classList.remove('hidden');
+                updateAutoSavePreview();
+            } else {
+                document.getElementById('setupAutoSaveOptions').classList.add('hidden');
+            }
+        }
+        
+        function updateAutoSavePreview() {
+            const percentage = document.getElementById('setupAutoSavePercentage').value;
+            document.getElementById('setupAutoSavePreviewPercent').textContent = percentage + '%';
+            const salary = parseFloat(document.getElementById('setupSalary').value) || 4000;
+            const saved = (salary * percentage / 100).toFixed(2);
+            document.getElementById('setupAutoSavePreviewText').textContent = 
+                `مثال: من راتب ${salary} ج، سيتم ادخار ${saved} ج تلقائياً`;
+        }
+        
+        function handleSetup(event) {
+            event.preventDefault();
+            
+            const userType = document.getElementById('setupUserType').value;
+            appData.userType = userType;
+            
+            if (userType === 'employee') {
+                appData.salary = parseFloat(document.getElementById('setupSalary').value) || 0;
+                appData.salaryType = document.getElementById('setupSalaryType').value;
+                
+                if (appData.salaryType === 'fixed') {
+                    appData.payday = parseInt(document.getElementById('setupPayday').value) || 25;
+                    appData.nextPayday = null;
+                } else {
+                    appData.payday = null;
+                    appData.nextPayday = document.getElementById('setupNextPayday').value;
+                }
+            } else {
+                appData.salary = 0;
+            }
+            
+            appData.emergencyFund = parseFloat(document.getElementById('setupEmergency').value) || 0;
+            appData.autoSaveEnabled = document.getElementById('setupAutoSave').checked;
+            appData.autoSavePercentage = parseInt(document.getElementById('setupAutoSavePercentage').value) || 10;
+            
+            // Apply auto save
+            if (appData.autoSaveEnabled && appData.salary > 0) {
+                const autoSaveAmount = (appData.salary * appData.autoSavePercentage / 100);
+                appData.emergencyFund += autoSaveAmount;
+            }
+            
+            saveData();
+            showMainApp();
+            updateDashboard();
+            showToast('تم إعداد الحساب بنجاح! 🎉', 'success');
+        }
+        
+        // Tab Navigation
+        function switchTab(tab, clickedElement) {
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            }
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            if (tab === 'reports') {
+                renderReports();
+            } else if (tab === 'recurring') {
+                renderRecurringExpenses();
+            } else if (tab === 'expenses') {
+                renderExpenses();
+            } else if (tab === 'dashboard') {
+                updateDashboard();
+            }
+        }
+        
+        // Modal Functions
+        function openExpenseModal() {
+            document.getElementById('expenseModal').classList.add('active');
+        }
+        
+        function openIncomeModal() {
+            document.getElementById('incomeModal').classList.add('active');
+        }
+        
+        function openRecurringModal() {
+            document.getElementById('recurringEditId').value = '';
+            document.getElementById('recurringStartDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('recurringModal').classList.add('active');
+        }
+        
+        function openAddToEmergencyModal() {
+            document.getElementById('emergencyModal').classList.add('active');
+        }
+        
+        function openSettings() {
+            // Populate settings modal
+            document.getElementById('settingsUserType').value = appData.userType;
+            document.getElementById('settingsSalary').value = appData.salary;
+            document.getElementById('settingsSalaryType').value = appData.salaryType || 'fixed';
+            document.getElementById('settingsPayday').value = appData.payday || 25;
+            document.getElementById('settingsNextPayday').value = appData.nextPayday || '';
+            document.getElementById('settingsAutoSave').checked = appData.autoSaveEnabled;
+            document.getElementById('settingsAutoSavePercentage').value = appData.autoSavePercentage;
+            
+            toggleSettingsUserType();
+            toggleSettingsPayday();
+            toggleSettingsAutoSave();
+            
+            document.getElementById('settingsModal').classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        function toggleRecurringOptions() {
+            const pattern = document.getElementById('recurringPattern').value;
+            if (pattern === 'weekly') {
+                document.getElementById('weeklyOptions').classList.remove('hidden');
+                document.getElementById('monthlyOptions').classList.add('hidden');
+            } else if (pattern === 'monthly') {
+                document.getElementById('weeklyOptions').classList.add('hidden');
+                document.getElementById('monthlyOptions').classList.remove('hidden');
+            } else {
+                document.getElementById('weeklyOptions').classList.add('hidden');
+                document.getElementById('monthlyOptions').classList.add('hidden');
+            }
+        }
+        
+        function toggleSettingsUserType() {
+            const userType = document.getElementById('settingsUserType').value;
+            if (userType === 'freelancer') {
+                document.getElementById('settingsEmployeeSection').classList.add('hidden');
+            } else {
+                document.getElementById('settingsEmployeeSection').classList.remove('hidden');
+            }
+        }
+        
+        function toggleSettingsPayday() {
+            const salaryType = document.getElementById('settingsSalaryType').value;
+            if (salaryType === 'irregular') {
+                document.getElementById('settingsFixedPayday').classList.add('hidden');
+                document.getElementById('settingsIrregularPayday').classList.remove('hidden');
+            } else {
+                document.getElementById('settingsFixedPayday').classList.remove('hidden');
+                document.getElementById('settingsIrregularPayday').classList.add('hidden');
+            }
+        }
+        
+        function toggleSettingsAutoSave() {
+            const enabled = document.getElementById('settingsAutoSave').checked;
+            if (enabled) {
+                document.getElementById('settingsAutoSaveOptions').classList.remove('hidden');
+            } else {
+                document.getElementById('settingsAutoSaveOptions').classList.add('hidden');
+            }
+        }
+        
+        // Handle Forms
+        function handleAddExpense(event) {
+            event.preventDefault();
+            
+            const expense = {
+                id: Date.now().toString(),
+                name: document.getElementById('expenseName').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                date: document.getElementById('expenseDate').value,
+                category: document.getElementById('expenseCategory').value,
+                isEmergency: document.getElementById('expenseIsEmergency').checked,
+                note: document.getElementById('expenseNote').value
+            };
+            
+            if (expense.isEmergency) {
+                expense.category = 'طوارئ';
+                appData.emergencyFund -= expense.amount;
+            }
+            
+            appData.expenses.push(expense);
+            saveData();
+            
+            closeModal('expenseModal');
+            updateDashboard();
+            renderExpenses();
+            
+            showToast(`تم إضافة المصروف: ${expense.name} - ${expense.amount} ج`, 'success');
+            
+            // Reset form
+            event.target.reset();
+            document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+        }
+        
+        function handleAddIncome(event) {
+            event.preventDefault();
+            
+            const income = {
+                id: Date.now().toString(),
+                name: document.getElementById('incomeName').value,
+                amount: parseFloat(document.getElementById('incomeAmount').value),
+                date: document.getElementById('incomeDate').value
+            };
+            
+            appData.incomes.push(income);
+            saveData();
+            
+            closeModal('incomeModal');
+            updateDashboard();
+            
+            showToast(`تم إضافة الإيراد: ${income.name} - ${income.amount} ج`, 'success');
+            
+            event.target.reset();
+            document.getElementById('incomeDate').value = new Date().toISOString().split('T')[0];
+        }
+        
+        function handleAddRecurring(event) {
+            event.preventDefault();
+            
+            const pattern = document.getElementById('recurringPattern').value;
+            const recurring = {
+                id: Date.now().toString(),
+                name: document.getElementById('recurringName').value,
+                amount: parseFloat(document.getElementById('recurringAmount').value),
+                category: document.getElementById('recurringCategory').value,
+                pattern: pattern,
+                active: true,
+                startDate: document.getElementById('recurringStartDate').value,
+                pausedDate: null,
+                pauseReason: null
+            };
+            
+            if (pattern === 'weekly') {
+                const weekdays = Array.from(document.querySelectorAll('input[name="weekdays"]:checked')).map(cb => parseInt(cb.value));
+                recurring.weekdays = weekdays;
+            } else if (pattern === 'monthly') {
+                recurring.dayOfMonth = parseInt(document.getElementById('recurringDayOfMonth').value);
+            }
+            
+            const editId = document.getElementById('recurringEditId').value;
+            
+            if (editId) {
+                // Edit existing
+                const index = appData.recurringExpenses.findIndex(r => r.id === editId);
+                if (index !== -1) {
+                    recurring.id = editId;
+                    recurring.startDate = appData.recurringExpenses[index].startDate;
+                    recurring.pausedDate = appData.recurringExpenses[index].pausedDate;
+                    recurring.pauseReason = appData.recurringExpenses[index].pauseReason;
+                    appData.recurringExpenses[index] = recurring;
+                    showToast(`تم تعديل المصروف الثابت: ${recurring.name}`, 'success');
+                }
+            } else {
+                // Add new
+                appData.recurringExpenses.push(recurring);
+                showToast(`تم إضافة المصروف الثابت: ${recurring.name}`, 'success');
+            }
+            
+            saveData();
+            
+            closeModal('recurringModal');
+            generateRecurringExpenses();
+            updateDashboard();
+            renderRecurringExpenses();
+            
+            event.target.reset();
+            document.getElementById('recurringEditId').value = '';
+        }
+        
+        function handleAddToEmergency(event) {
+            event.preventDefault();
+            
+            const action = document.getElementById('emergencyAction').value;
+            const amount = parseFloat(document.getElementById('emergencyAmount').value);
+            
+            if (action === 'add') {
+                appData.emergencyFund += amount;
+                showToast(`تم إضافة ${amount} ج للاحتياطي`, 'success');
+            } else {
+                if (appData.emergencyFund >= amount) {
+                    appData.emergencyFund -= amount;
+                    showToast(`تم سحب ${amount} ج من الاحتياطي`, 'success');
+                } else {
+                    showToast('الرصيد الاحتياطي غير كافٍ!', 'danger');
+                    return;
+                }
+            }
+            
+            saveData();
+            closeModal('emergencyModal');
+            updateDashboard();
+            
+            event.target.reset();
+        }
+        
+        function handleUpdateSettings(event) {
+            event.preventDefault();
+            
+            appData.userType = document.getElementById('settingsUserType').value;
+            
+            if (appData.userType === 'employee') {
+                appData.salary = parseFloat(document.getElementById('settingsSalary').value);
+                appData.salaryType = document.getElementById('settingsSalaryType').value;
+                
+                if (appData.salaryType === 'fixed') {
+                    appData.payday = parseInt(document.getElementById('settingsPayday').value);
+                    appData.nextPayday = null;
+                } else {
+                    appData.payday = null;
+                    appData.nextPayday = document.getElementById('settingsNextPayday').value;
+                }
+            }
+            
+            appData.autoSaveEnabled = document.getElementById('settingsAutoSave').checked;
+            appData.autoSavePercentage = parseInt(document.getElementById('settingsAutoSavePercentage').value);
+            
+            saveData();
+            closeModal('settingsModal');
+            updateDashboard();
+            
+            showToast('تم تحديث الإعدادات بنجاح!', 'success');
+        }
+        
+        // Dashboard Functions
+        function updateDashboard() {
+            // Calculate totals
+            const totalIncome = appData.userType === 'employee' ? appData.salary : 
+                appData.incomes.reduce((sum, inc) => sum + inc.amount, 0);
+            
+            const totalExpenses = appData.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const availableBalance = totalIncome - totalExpenses;
+            
+            // Update display
+            document.getElementById('totalIncomeLabel').textContent = 
+                appData.userType === 'employee' ? 'الراتب الشهري' : 'إجمالي الإيرادات';
+            document.getElementById('totalIncome').textContent = totalIncome.toFixed(2);
+            document.getElementById('availableBalance').textContent = availableBalance.toFixed(2);
+            document.getElementById('emergencyFund').textContent = appData.emergencyFund.toFixed(2);
+            
+            if (appData.autoSaveEnabled) {
+                document.getElementById('autoSaveInfo').textContent = `ادخار ${appData.autoSavePercentage}%`;
+            }
+            
+            // Calculate days remaining
+            const today = new Date();
+            let nextPayday;
+            
+            if (appData.salaryType === 'fixed' && appData.payday) {
+                nextPayday = new Date(today.getFullYear(), today.getMonth(), appData.payday);
+                if (nextPayday <= today) {
+                    nextPayday.setMonth(nextPayday.getMonth() + 1);
+                }
+            } else if (appData.nextPayday) {
+                nextPayday = new Date(appData.nextPayday);
+            }
+            
+            if (nextPayday) {
+                const daysRemaining = Math.ceil((nextPayday - today) / (1000 * 60 * 60 * 24));
+                document.getElementById('daysRemaining').textContent = daysRemaining;
+                document.getElementById('daysRemainingLabel').textContent = 'الأيام المتبقية';
+            } else {
+                document.getElementById('daysRemaining').textContent = '-';
+                document.getElementById('daysRemainingLabel').textContent = 'غير محدد';
+            }
+            
+            // Calculate expected recurring expenses
+            const expectedRecurring = calculateExpectedRecurring();
+            document.getElementById('expectedRecurring').textContent = expectedRecurring.toFixed(2);
+            
+            // Show prediction alert
+            showPredictionAlert(availableBalance, expectedRecurring);
+            
+            // Render recent expenses
+            renderRecentExpenses();
+        }
+        
+        function calculateExpectedRecurring() {
+            let total = 0;
+            const today = new Date();
+            const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            const daysLeft = Math.ceil((endOfMonth - today) / (1000 * 60 * 60 * 24));
+            
+            appData.recurringExpenses.forEach(rec => {
+                if (!rec.active) return;
+                
+                if (rec.pattern === 'daily') {
+                    total += rec.amount * daysLeft;
+                } else if (rec.pattern === 'weekly' && rec.weekdays) {
+                    const weeksLeft = Math.ceil(daysLeft / 7);
+                    total += rec.amount * rec.weekdays.length * weeksLeft;
+                } else if (rec.pattern === 'monthly' && rec.dayOfMonth) {
+                    if (rec.dayOfMonth >= today.getDate()) {
+                        total += rec.amount;
+                    }
+                }
+            });
+            
+            return total;
+        }
+        
+        function showPredictionAlert(available, expected) {
+            const container = document.getElementById('predictionAlert');
+            const predicted = available - expected;
+            
+            if (predicted < 0) {
+                container.innerHTML = `
+                    <div class="p-3 rounded-lg flex items-start gap-2 mb-3" style="background: rgba(239, 68, 68, 0.15); color: #991b1b;">
+                        <i class="fas fa-exclamation-triangle text-lg"></i>
+                        <div class="flex-1">
+                            <p class="font-bold text-sm mb-1">تحذير: عجز متوقع!</p>
+                            <p class="text-xs">المصاريف الثابتة المتوقعة (${expected.toFixed(2)} ج) قد تسبب عجزاً قدره ${Math.abs(predicted).toFixed(2)} ج</p>
+                        </div>
+                    </div>
+                `;
+            } else if (predicted < available * 0.1) {
+                container.innerHTML = `
+                    <div class="p-3 rounded-lg flex items-start gap-2 mb-3" style="background: rgba(245, 158, 11, 0.15); color: #92400e;">
+                        <i class="fas fa-info-circle text-lg"></i>
+                        <div class="flex-1">
+                            <p class="font-bold text-sm mb-1">تنبيه: الرصيد قد ينخفض</p>
+                            <p class="text-xs">المصاريف الثابتة المتوقعة: ${expected.toFixed(2)} ج. الرصيد المتوقع: ${predicted.toFixed(2)} ج</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '';
+            }
+        }
+        
+        function renderRecentExpenses() {
+            const container = document.getElementById('recentExpenses');
+            const recent = appData.expenses.slice(-10).reverse();
+            
+            if (recent.length === 0) {
+                container.innerHTML = '<p class="text-center py-4 text-sm" style="color: var(--text-secondary);">لا توجد مصروفات بعد</p>';
+                return;
+            }
+            
+            container.innerHTML = recent.map(exp => `
+                <div class="expense-item ${exp.isEmergency ? 'emergency' : ''} ${exp.recurringId ? 'recurring' : ''}">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex-1">
+                            <div class="font-bold text-sm" style="color: var(--text-primary);">${exp.name}</div>
+                            <div class="text-xs" style="color: var(--text-secondary);">
+                                ${exp.category} • ${exp.date}
+                                ${exp.recurringId ? '<span class="mr-2" style="color: #3b82f6;">⟳ ثابت</span>' : ''}
+                                ${exp.isEmergency ? '<span class="mr-2" style="color: #ef4444;">⚠ من الاحتياطي</span>' : ''}
+                            </div>
+                            ${exp.note ? `<div class="text-xs mt-1" style="color: var(--text-secondary);">${exp.note}</div>` : ''}
+                        </div>
+                        <div class="text-left">
+                            <div class="font-bold" style="color: #ef4444;">${exp.amount.toFixed(2)} ج</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Recurring Expenses Generation
+        function generateRecurringExpenses() {
+            const today = new Date();
+            
+            appData.recurringExpenses.forEach(rec => {
+                if (!rec.active || rec.pausedDate) return;
+                
+                const startDate = rec.startDate ? new Date(rec.startDate) : new Date(today.getFullYear(), today.getMonth(), 1);
+                
+                // Generate from start date to today
+                for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+                    // Check if already generated for this date
+                    const alreadyGenerated = appData.expenses.some(exp => 
+                        exp.recurringId === rec.id && 
+                        exp.date === d.toISOString().split('T')[0]
+                    );
+                    
+                    if (alreadyGenerated) continue;
+                    
+                    // Check if should generate for this date
+                    if (shouldGenerateForDate(rec, new Date(d))) {
+                        addGeneratedExpense(rec, new Date(d));
+                    }
+                }
+            });
+            
+            saveData();
+        }
+        
+        function addGeneratedExpense(recurring, date) {
+            const expense = {
+                id: Date.now().toString() + Math.random(),
+                name: recurring.name,
+                amount: recurring.amount,
+                category: recurring.category,
+                date: date.toISOString().split('T')[0],
+                isEmergency: false,
+                recurringId: recurring.id,
+                note: 'تم إضافته تلقائياً من المصروف الثابت'
+            };
+            
+            appData.expenses.push(expense);
+        }
+        
+        // Render Functions
+        function renderExpenses() {
+            const container = document.getElementById('allExpenses');
+            const category = document.getElementById('filterCategory').value;
+            const type = document.getElementById('filterType').value;
+            
+            let filtered = appData.expenses;
+            
+            if (category !== 'all') {
+                filtered = filtered.filter(exp => exp.category === category);
+            }
+            
+            if (type !== 'all') {
+                if (type === 'emergency') {
+                    filtered = filtered.filter(exp => exp.isEmergency);
+                } else if (type === 'recurring') {
+                    filtered = filtered.filter(exp => exp.recurringId);
+                } else if (type === 'regular') {
+                    filtered = filtered.filter(exp => !exp.isEmergency && !exp.recurringId);
+                }
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<p class="text-center py-6 text-sm" style="color: var(--text-secondary);">لا توجد مصروفات تطابق الفلتر</p>';
+                return;
+            }
+            
+            container.innerHTML = filtered.reverse().map(exp => `
+                <div class="expense-item ${exp.isEmergency ? 'emergency' : ''} ${exp.recurringId ? 'recurring' : ''}">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex-1">
+                            <div class="font-bold text-sm" style="color: var(--text-primary);">${exp.name}</div>
+                            <div class="text-xs" style="color: var(--text-secondary);">
+                                ${exp.category} • ${exp.date}
+                                ${exp.recurringId ? '<span class="mr-2" style="color: #3b82f6;">⟳ ثابت</span>' : ''}
+                                ${exp.isEmergency ? '<span class="mr-2" style="color: #ef4444;">⚠ طارئ</span>' : ''}
+                            </div>
+                            ${exp.note ? `<div class="text-xs mt-1" style="color: var(--text-secondary);">${exp.note}</div>` : ''}
+                        </div>
+                        <div class="text-left">
+                            <div class="font-bold mb-1" style="color: #ef4444;">${exp.amount.toFixed(2)} ج</div>
+                            <button onclick="deleteExpense('${exp.id}')" class="text-xs" style="color: #ef4444;">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderRecurringExpenses() {
+            const container = document.getElementById('recurringExpensesList');
+            
+            if (!appData.recurringExpenses || appData.recurringExpenses.length === 0) {
+                container.innerHTML = '<p class="text-center py-6 text-sm" style="color: var(--text-secondary);">لا توجد مصروفات ثابتة</p>';
+                return;
+            }
+            
+            container.innerHTML = appData.recurringExpenses.map(rec => {
+                let patternText = '';
+                if (rec.pattern === 'daily') {
+                    patternText = 'يومي';
+                } else if (rec.pattern === 'weekly') {
+                    const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+                    if (rec.weekdays && rec.weekdays.length > 0) {
+                        patternText = 'أسبوعي: ' + rec.weekdays.map(d => days[d]).join(', ');
+                    } else {
+                        patternText = 'أسبوعي: غير محدد';
+                    }
+                } else if (rec.pattern === 'monthly') {
+                    patternText = `شهري في اليوم ${rec.dayOfMonth || 'غير محدد'}`;
+                }
+                
+                const billsCount = appData.expenses.filter(exp => exp.recurringId === rec.id).length;
+                const totalAmount = appData.expenses.filter(exp => exp.recurringId === rec.id).reduce((sum, exp) => sum + exp.amount, 0);
+                
+                let statusBadge = '';
+                if (rec.pausedDate) {
+                    statusBadge = `<span class="text-xs px-2 py-1 rounded" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i class="fas fa-pause"></i> متوقف (${rec.pauseReason || 'بدون سبب'})</span>`;
+                } else if (rec.active) {
+                    statusBadge = `<span class="text-xs px-2 py-1 rounded" style="background: rgba(16, 185, 129, 0.15); color: #10b981;"><i class="fas fa-check-circle"></i> نشط</span>`;
+                }
+                
+                return `
+                    <div class="card mb-3" style="border-right: 3px solid ${rec.pausedDate ? '#f59e0b' : '#3b82f6'};">
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <div class="font-bold" style="color: var(--text-primary);">${rec.name}</div>
+                                    ${statusBadge}
+                                </div>
+                                <div class="text-sm" style="color: var(--text-secondary);">
+                                    ${rec.amount.toFixed(2)} ج • ${rec.category}
+                                </div>
+                                <div class="text-xs mt-1" style="color: var(--text-secondary);">
+                                    ${patternText} • بداية: ${rec.startDate || 'غير محدد'}
+                                </div>
+                                ${billsCount > 0 ? `
+                                    <div class="text-xs mt-1 flex items-center gap-2" style="color: var(--text-secondary);">
+                                        <span><i class="fas fa-file-invoice"></i> ${billsCount} فاتورة</span>
+                                        <span>•</span>
+                                        <span>إجمالي: ${totalAmount.toFixed(2)} ج</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="flex gap-2 flex-wrap">
+                            ${billsCount > 0 ? `
+                                <button onclick="viewRecurringBills('${rec.id}')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                                    <i class="fas fa-eye"></i> عرض الفواتير
+                                </button>
+                            ` : ''}
+                            <button onclick="editRecurring('${rec.id}')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                                <i class="fas fa-edit"></i> تعديل
+                            </button>
+                            <button onclick="toggleRecurringActive('${rec.id}')" class="btn ${rec.pausedDate ? 'btn-primary' : ''}" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; background: ${rec.pausedDate ? '' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;'}">
+                                <i class="fas ${rec.pausedDate ? 'fa-play' : 'fa-pause'}"></i>
+                                ${rec.pausedDate ? 'تشغيل' : 'إيقاف مؤقت'}
+                            </button>
+                            <button onclick="deleteRecurring('${rec.id}')" class="btn btn-danger" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderReports() {
+            // Update summary
+            const totalIncome = appData.userType === 'employee' ? appData.salary : 
+                appData.incomes.reduce((sum, inc) => sum + inc.amount, 0);
+            const totalExpenses = appData.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            
+            document.getElementById('reportSalary').textContent = totalIncome.toFixed(2);
+            document.getElementById('reportTotalExpenses').textContent = totalExpenses.toFixed(2);
+            document.getElementById('reportRemaining').textContent = (totalIncome - totalExpenses).toFixed(2);
+            document.getElementById('reportEmergency').textContent = appData.emergencyFund.toFixed(2);
+            
+            // Render chart
+            renderChart();
+        }
+        
+        function renderChart() {
+            const ctx = document.getElementById('expensesChart');
+            
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            
+            const categories = {};
+            appData.expenses.forEach(exp => {
+                categories[exp.category] = (categories[exp.category] || 0) + exp.amount;
+            });
+            
+            const labels = Object.keys(categories);
+            const data = Object.values(categories);
+            
+            if (labels.length === 0) {
+                ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+                return;
+            }
+            
+            currentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#10b981',
+                            '#3b82f6',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#8b5cf6',
+                            '#ec4899',
+                            '#06b6d4'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Delete Functions
+        function deleteExpense(id) {
+            if (confirm('هل تريد حذف هذا المصروف؟')) {
+                const expense = appData.expenses.find(exp => exp.id === id);
+                
+                // Restore to emergency fund if it was from emergency
+                if (expense && expense.isEmergency) {
+                    appData.emergencyFund += expense.amount;
+                }
+                
+                appData.expenses = appData.expenses.filter(exp => exp.id !== id);
+                saveData();
+                updateDashboard();
+                renderExpenses();
+                showToast('تم حذف المصروف بنجاح!', 'success');
+            }
+        }
+        
+        function deleteRecurring(id) {
+            if (confirm('هل تريد حذف هذا المصروف الثابت؟ سيتم حذف جميع المصروفات المرتبطة به.')) {
+                // Delete the recurring expense
+                appData.recurringExpenses = appData.recurringExpenses.filter(rec => rec.id !== id);
+                
+                // Delete all generated expenses
+                appData.expenses = appData.expenses.filter(exp => exp.recurringId !== id);
+                
+                saveData();
+                renderRecurringExpenses();
+                updateDashboard();
+                renderExpenses();
+                showToast('تم حذف المصروف الثابت بنجاح!', 'success');
+            }
+        }
+        
+        function toggleRecurringActive(id) {
+            const recurring = appData.recurringExpenses.find(rec => rec.id === id);
+            if (!recurring) return;
+            
+            if (recurring.pausedDate) {
+                // Resume
+                document.getElementById('resumeRecurringId').value = id;
+                const pausedDate = new Date(recurring.pausedDate);
+                const today = new Date();
+                const daysPaused = Math.ceil((today - pausedDate) / (1000 * 60 * 60 * 24));
+                document.getElementById('resumeRecurringMessage').textContent = 
+                    `تم إيقاف "${recurring.name}" منذ ${daysPaused} يوم (${recurring.pausedDate})`;
+                document.getElementById('resumeRecurringModal').classList.add('active');
+            } else {
+                // Pause
+                document.getElementById('pauseRecurringId').value = id;
+                document.getElementById('pauseRecurringModal').classList.add('active');
+            }
+        }
+        
+        function handlePauseRecurring(event) {
+            event.preventDefault();
+            const id = document.getElementById('pauseRecurringId').value;
+            const reason = document.getElementById('pauseReason').value;
+            
+            const recurring = appData.recurringExpenses.find(rec => rec.id === id);
+            if (recurring) {
+                recurring.pausedDate = new Date().toISOString().split('T')[0];
+                recurring.pauseReason = reason;
+                saveData();
+                renderRecurringExpenses();
+                updateDashboard();
+                showToast(`تم إيقاف "${recurring.name}" مؤقتاً`, 'success');
+                closeModal('pauseRecurringModal');
+            }
+        }
+        
+        function handleResumeRecurring(event) {
+            event.preventDefault();
+            const id = document.getElementById('resumeRecurringId').value;
+            const option = document.querySelector('input[name="resumeOption"]:checked').value;
+            
+            const recurring = appData.recurringExpenses.find(rec => rec.id === id);
+            if (!recurring) return;
+            
+            if (option === 'generateMissed') {
+                // Generate missed bills
+                const pausedDate = new Date(recurring.pausedDate);
+                const today = new Date();
+                
+                for (let d = new Date(pausedDate); d <= today; d.setDate(d.getDate() + 1)) {
+                    if (shouldGenerateForDate(recurring, new Date(d))) {
+                        addGeneratedExpense(recurring, new Date(d));
+                    }
+                }
+                showToast(`تم توليد الفواتير الفائتة لـ "${recurring.name}"`, 'success');
+            }
+            
+            recurring.pausedDate = null;
+            recurring.pauseReason = null;
+            saveData();
+            renderRecurringExpenses();
+            updateDashboard();
+            renderExpenses();
+            showToast(`تم إعادة تشغيل "${recurring.name}"`, 'success');
+            closeModal('resumeRecurringModal');
+        }
+        
+        function shouldGenerateForDate(recurring, date) {
+            if (recurring.pattern === 'daily') {
+                return true;
+            } else if (recurring.pattern === 'weekly' && recurring.weekdays) {
+                return recurring.weekdays.includes(date.getDay());
+            } else if (recurring.pattern === 'monthly' && recurring.dayOfMonth) {
+                return date.getDate() === recurring.dayOfMonth;
+            }
+            return false;
+        }
+        
+        function editRecurring(id) {
+            const recurring = appData.recurringExpenses.find(rec => rec.id === id);
+            if (!recurring) return;
+            
+            document.getElementById('recurringEditId').value = id;
+            document.getElementById('recurringName').value = recurring.name;
+            document.getElementById('recurringAmount').value = recurring.amount;
+            document.getElementById('recurringCategory').value = recurring.category;
+            document.getElementById('recurringPattern').value = recurring.pattern;
+            document.getElementById('recurringStartDate').value = recurring.startDate || '';
+            
+            toggleRecurringOptions();
+            
+            if (recurring.pattern === 'weekly' && recurring.weekdays) {
+                recurring.weekdays.forEach(day => {
+                    const checkbox = document.querySelector(`input[name="weekdays"][value="${day}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            } else if (recurring.pattern === 'monthly' && recurring.dayOfMonth) {
+                document.getElementById('recurringDayOfMonth').value = recurring.dayOfMonth;
+            }
+            
+            document.getElementById('recurringModal').classList.add('active');
+        }
+        
+        function viewRecurringBills(recurringId) {
+            const recurring = appData.recurringExpenses.find(rec => rec.id === recurringId);
+            if (!recurring) return;
+            
+            const bills = appData.expenses.filter(exp => exp.recurringId === recurringId);
+            const container = document.getElementById('recurringBillsList');
+            
+            if (bills.length === 0) {
+                container.innerHTML = '<p class="text-center py-4 text-sm" style="color: var(--text-secondary);">لا توجد فواتير مولدة بعد</p>';
+            } else {
+                container.innerHTML = `
+                    <div class="mb-3 p-3 rounded-lg" style="background: rgba(59, 130, 246, 0.1);">
+                        <div class="font-bold mb-1" style="color: var(--text-primary);">${recurring.name}</div>
+                        <div class="text-sm" style="color: var(--text-secondary);">عدد الفواتير: ${bills.length} • الإجمالي: ${bills.reduce((sum, b) => sum + b.amount, 0).toFixed(2)} ج</div>
+                    </div>
+                    ${bills.map(bill => `
+                        <div class="expense-item recurring mb-2">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex-1">
+                                    <div class="text-sm font-bold" style="color: var(--text-primary);">${bill.date}</div>
+                                    <div class="text-xs" style="color: var(--text-secondary);">
+                                        ${bill.amount.toFixed(2)} ج
+                                        ${bill.note && bill.note !== 'تم إضافته تلقائياً من المصروف الثابت' ? `• ${bill.note}` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button onclick="openEditBill('${bill.id}')" class="text-xs px-2 py-1" style="color: #3b82f6;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteSingleBill('${bill.id}')" class="text-xs px-2 py-1" style="color: #ef4444;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            }
+            
+            document.getElementById('recurringBillsModal').classList.add('active');
+        }
+        
+        function openEditBill(billId) {
+            const bill = appData.expenses.find(exp => exp.id === billId);
+            if (!bill) return;
+            
+            document.getElementById('editBillId').value = billId;
+            document.getElementById('editBillAmount').value = bill.amount;
+            document.getElementById('editBillNote').value = bill.note || '';
+            
+            document.getElementById('editBillModal').classList.add('active');
+        }
+        
+        function handleEditSingleBill(event) {
+            event.preventDefault();
+            const billId = document.getElementById('editBillId').value;
+            const newAmount = parseFloat(document.getElementById('editBillAmount').value);
+            const newNote = document.getElementById('editBillNote').value;
+            
+            const bill = appData.expenses.find(exp => exp.id === billId);
+            if (bill) {
+                bill.amount = newAmount;
+                bill.note = newNote || bill.note;
+                saveData();
+                updateDashboard();
+                renderExpenses();
+                
+                // Refresh the bills list if it's open
+                if (bill.recurringId) {
+                    viewRecurringBills(bill.recurringId);
+                }
+                
+                showToast('تم تعديل الفاتورة بنجاح!', 'success');
+                closeModal('editBillModal');
+            }
+        }
+        
+        function deleteSingleBill(billId) {
+            if (confirm('هل تريد حذف هذه الفاتورة فقط؟ لن يتم حذف المصروف الثابت.')) {
+                const bill = appData.expenses.find(exp => exp.id === billId);
+                const recurringId = bill ? bill.recurringId : null;
+                
+                appData.expenses = appData.expenses.filter(exp => exp.id !== billId);
+                saveData();
+                updateDashboard();
+                renderExpenses();
+                
+                if (recurringId) {
+                    viewRecurringBills(recurringId);
+                    renderRecurringExpenses();
+                }
+                
+                showToast('تم حذف الفاتورة بنجاح!', 'success');
+            }
+        }
+        
+        // Export Functions
+        function exportPDF() {
+            showToast('جاري إنشاء ملف PDF...', 'info');
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                
+                pdf.setFillColor(16, 185, 129);
+                pdf.rect(0, 0, pageWidth, 35, 'F');
+                
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(20);
+                pdf.setTextColor(255, 255, 255);
+                pdf.text('Mizaniyati - Budget Report', pageWidth / 2, 20, { align: 'center' });
+                
+                pdf.setFontSize(10);
+                pdf.setTextColor(0, 0, 0);
+                
+                const totalIncome = appData.userType === 'employee' ? appData.salary : 
+                    appData.incomes.reduce((sum, inc) => sum + inc.amount, 0);
+                const totalExpenses = appData.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+                
+                let y = 50;
+                pdf.text(`Total Income: ${totalIncome.toFixed(2)} EGP`, 20, y);
+                y += 10;
+                pdf.text(`Total Expenses: ${totalExpenses.toFixed(2)} EGP`, 20, y);
+                y += 10;
+                pdf.text(`Remaining: ${(totalIncome - totalExpenses).toFixed(2)} EGP`, 20, y);
+                y += 10;
+                pdf.text(`Emergency Fund: ${appData.emergencyFund.toFixed(2)} EGP`, 20, y);
+                
+                y += 15;
+                pdf.setFontSize(12);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Expenses:', 20, y);
+                
+                y += 10;
+                pdf.setFontSize(9);
+                pdf.setFont('helvetica', 'normal');
+                
+                appData.expenses.forEach((exp, index) => {
+                    if (y > 270) {
+                        pdf.addPage();
+                        y = 20;
+                    }
+                    
+                    pdf.text(`${exp.date} - ${exp.name}: ${exp.amount.toFixed(2)} EGP (${exp.category})`, 20, y);
+                    y += 7;
+                });
+                
+                pdf.save('mizaniyati-report.pdf');
+                showToast('تم تصدير PDF بنجاح! 📄', 'success');
+            } catch (error) {
+                console.error('PDF export error:', error);
+                showToast('حدث خطأ أثناء تصدير PDF', 'danger');
+            }
+        }
+        
+        function exportToExcel() {
+            try {
+                let csv = '\uFEFF';
+                csv += 'التاريخ,الاسم,المبلغ,الفئة,ملاحظات\n';
+                
+                appData.expenses.forEach(exp => {
+                    csv += `${exp.date},${exp.name},${exp.amount},${exp.category},${exp.note || ''}\n`;
+                });
+                
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'mizaniyati-expenses.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showToast('تم تصدير Excel بنجاح! 📊', 'success');
+            } catch (error) {
+                console.error('Excel export error:', error);
+                showToast('حدث خطأ أثناء تصدير Excel', 'danger');
+            }
+        }
+        
+        function shareReport() {
+            const totalIncome = appData.userType === 'employee' ? appData.salary : 
+                appData.incomes.reduce((sum, inc) => sum + inc.amount, 0);
+            const totalExpenses = appData.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            
+            const text = `تقرير ميزانيتي:\nالدخل: ${totalIncome.toFixed(2)} ج\nالمصروفات: ${totalExpenses.toFixed(2)} ج\nالمتبقي: ${(totalIncome - totalExpenses).toFixed(2)} ج\nالاحتياطي: ${appData.emergencyFund.toFixed(2)} ج`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'تقرير ميزانيتي',
+                    text: text
+                }).catch(err => console.log('Error sharing:', err));
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('تم نسخ التقرير إلى الحافظة! 📋', 'success');
+                });
+            }
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'mizaniyati-backup.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showToast('تم تصدير البيانات بنجاح! 💾', 'success');
+        }
+        
+        function triggerImportData() {
+            document.getElementById('importFileInput').click();
+        }
+        
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    
+                    if (confirm('هل تريد استبدال جميع البيانات الحالية بالبيانات المستوردة؟')) {
+                        appData = imported;
+                        saveData();
+                        location.reload();
+                    }
+                } catch (error) {
+                    showToast('خطأ في قراءة الملف! تأكد من صحة الملف.', 'danger');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Toast Notification
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            const colors = {
+                success: 'border-r-4 border-green-500',
+                danger: 'border-r-4 border-red-500',
+                warning: 'border-r-4 border-orange-500',
+                info: 'border-r-4 border-blue-500'
+            };
+            
+            const icons = {
+                success: 'fa-check-circle text-green-500',
+                danger: 'fa-exclamation-circle text-red-500',
+                warning: 'fa-exclamation-triangle text-orange-500',
+                info: 'fa-info-circle text-blue-500'
+            };
+            
+            toast.className = 'toast active ' + (colors[type] || colors.info);
+            toast.style.background = 'var(--card-bg)';
+            toast.innerHTML = '<div class="flex items-start gap-2"><i class="fas ' + (icons[type] || icons.info) + '"></i><p class="flex-1 text-sm" style="color: var(--text-primary);">' + message + '</p></div>';
+            
+            setTimeout(function() {
+                toast.classList.remove('active');
+            }, 4000);
+        }
+    </script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+</body>
+
+
+
+
+
+</html>

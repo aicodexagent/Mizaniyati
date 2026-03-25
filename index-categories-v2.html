@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تطبيق ذكي لإدارة الميزانية الشخصية ومتابعة المصروفات اليومية">
+    <meta name="theme-color" content="#10b981">
+    
+    <title>ميزانيتي – صارف بذكاء</title>
+    
+    <link rel="manifest" id="manifestPlaceholder">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        * { font-family: 'Cairo', sans-serif; }
+        
+        :root {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --accent-primary: #10b981;
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --nav-bg: #ffffff;
+        }
+        
+        body { background: #f9fafb; min-height: 100vh; padding-bottom: 80px; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .btn { padding: 0.5rem 1rem; border-radius: 10px; font-weight: 600; transition: all 0.2s; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 12px; padding: 1.5rem; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        
+        .icon-option {
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.2rem;
+        }
+        .icon-option:hover { border-color: #10b981; transform: scale(1.1); }
+        .icon-option.selected { border-color: #10b981; background: #10b981; color: white; }
+    </style>
+</head>
+<body>
+    
+    <div id="mainApp" class="p-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold">ميزانيتي</h1>
+                <div class="flex gap-2">
+                    <button onclick="openCategoriesManager()" class="btn btn-primary">
+                        <i class="fas fa-tags"></i> الفئات
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button onclick="openExpenseModal()" class="btn btn-primary w-full">
+                    <i class="fas fa-minus-circle"></i> مصروف
+                </button>
+            </div>
+            
+            <div class="mt-4" id="expensesList"></div>
+        </div>
+    </div>
+    
+    <!-- Expense Modal -->
+    <div id="expenseModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4">إضافة مصروف</h3>
+            <form onsubmit="handleAddExpense(event)">
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2">اسم المصروف</label>
+                    <input type="text" id="expenseName" required class="w-full p-2 border rounded">
+                </div>
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2">المبلغ</label>
+                    <input type="number" id="expenseAmount" required class="w-full p-2 border rounded">
+                </div>
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2">الفئة</label>
+                    <select id="expenseCategory" required class="w-full p-2 border rounded"></select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">حفظ</button>
+                    <button type="button" onclick="closeModal('expenseModal')" class="btn flex-1" style="background: #e5e7eb;">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Categories Manager Modal -->
+    <div id="categoriesManagerModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4">
+                <i class="fas fa-tags ml-2" style="color: #8b5cf6;"></i>
+                إدارة الفئات المخصصة
+            </h3>
+            
+            <button onclick="openAddCategoryModal()" class="btn btn-primary w-full mb-4">
+                <i class="fas fa-plus-circle"></i> إضافة فئة جديدة
+            </button>
+            
+            <div id="customCategoriesList" class="mb-4"></div>
+            
+            <button onclick="closeModal('categoriesManagerModal')" class="btn w-full" style="background: #e5e7eb;">إغلاق</button>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Category Modal -->
+    <div id="addCategoryModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4">
+                <i class="fas fa-tag ml-2" style="color: #8b5cf6;"></i>
+                <span id="categoryModalTitle">إضافة فئة جديدة</span>
+            </h3>
+            <form onsubmit="handleSaveCategory(event)">
+                <input type="hidden" id="categoryEditId">
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2">اسم الفئة</label>
+                    <input type="text" id="categoryName" required placeholder="مثال: صحة" class="w-full p-2 border rounded">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block font-semibold mb-2">الأيقونة</label>
+                    <div class="grid grid-cols-6 gap-2" id="iconPicker">
+                        <button type="button" onclick="selectIcon('fa-briefcase')" class="icon-option" data-icon="fa-briefcase">
+                            <i class="fas fa-briefcase"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-shopping-cart')" class="icon-option" data-icon="fa-shopping-cart">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-home')" class="icon-option" data-icon="fa-home">
+                            <i class="fas fa-home"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-heart')" class="icon-option" data-icon="fa-heart">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-book')" class="icon-option" data-icon="fa-book">
+                            <i class="fas fa-book"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-graduation-cap')" class="icon-option" data-icon="fa-graduation-cap">
+                            <i class="fas fa-graduation-cap"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-medkit')" class="icon-option" data-icon="fa-medkit">
+                            <i class="fas fa-medkit"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-stethoscope')" class="icon-option" data-icon="fa-stethoscope">
+                            <i class="fas fa-stethoscope"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-dumbbell')" class="icon-option" data-icon="fa-dumbbell">
+                            <i class="fas fa-dumbbell"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-tshirt')" class="icon-option" data-icon="fa-tshirt">
+                            <i class="fas fa-tshirt"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-gamepad')" class="icon-option" data-icon="fa-gamepad">
+                            <i class="fas fa-gamepad"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-film')" class="icon-option" data-icon="fa-film">
+                            <i class="fas fa-film"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-music')" class="icon-option" data-icon="fa-music">
+                            <i class="fas fa-music"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-plane')" class="icon-option" data-icon="fa-plane">
+                            <i class="fas fa-plane"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-coffee')" class="icon-option" data-icon="fa-coffee">
+                            <i class="fas fa-coffee"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-car')" class="icon-option" data-icon="fa-car">
+                            <i class="fas fa-car"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-gas-pump')" class="icon-option" data-icon="fa-gas-pump">
+                            <i class="fas fa-gas-pump"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-mobile-alt')" class="icon-option" data-icon="fa-mobile-alt">
+                            <i class="fas fa-mobile-alt"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-gift')" class="icon-option" data-icon="fa-gift">
+                            <i class="fas fa-gift"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon('fa-paw')" class="icon-option" data-icon="fa-paw">
+                            <i class="fas fa-paw"></i>
+                        </button>
+                    </div>
+                    <input type="hidden" id="categoryIcon" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2">اللون</label>
+                    <div class="flex items-center gap-2">
+                        <input type="color" id="categoryColor" required class="w-16 h-10 rounded cursor-pointer">
+                        <div class="flex-1 p-2 rounded" id="categoryPreview" style="background: #3b82f6; color: white; text-align: center;">
+                            <i class="fas fa-tag" id="categoryPreviewIcon"></i>
+                            <span id="categoryPreviewText">معاينة</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-1">حفظ الفئة</button>
+                    <button type="button" onclick="closeModal('addCategoryModal')" class="btn flex-1" style="background: #e5e7eb;">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let appData = {
+            expenses: [],
+            customCategories: []
+        };
+        
+        function loadData() {
+            const saved = localStorage.getItem('mizaniyati-demo');
+            if (saved) {
+                appData = JSON.parse(saved);
+                if (!appData.customCategories) appData.customCategories = [];
+            }
+        }
+        
+        function saveData() {
+            localStorage.setItem('mizaniyati-demo', JSON.stringify(appData));
+        }
+        
+        function getDefaultCategories() {
+            return [
+                { name: 'مواصلات', icon: 'fa-bus', color: '#3b82f6', isDefault: true },
+                { name: 'أكل', icon: 'fa-utensils', color: '#10b981', isDefault: true },
+                { name: 'فواتير', icon: 'fa-file-invoice', color: '#ef4444', isDefault: true },
+                { name: 'ترفيه', icon: 'fa-gamepad', color: '#8b5cf6', isDefault: true },
+                { name: 'طوارئ', icon: 'fa-exclamation-triangle', color: '#f59e0b', isDefault: true },
+                { name: 'أخرى', icon: 'fa-ellipsis-h', color: '#6b7280', isDefault: true }
+            ];
+        }
+        
+        function getAllCategories() {
+            return [...getDefaultCategories(), ...appData.customCategories];
+        }
+        
+        function getCategoryInfo(categoryName) {
+            const allCategories = getAllCategories();
+            return allCategories.find(cat => cat.name === categoryName) || 
+                   { name: categoryName, icon: 'fa-tag', color: '#6b7280' };
+        }
+        
+        function populateCategorySelects() {
+            const allCategories = getAllCategories();
+            const select = document.getElementById('expenseCategory');
+            const currentValue = select.value;
+            
+            select.innerHTML = '';
+            allCategories.forEach(cat => {
+                select.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+            });
+            
+            if (currentValue && allCategories.some(cat => cat.name === currentValue)) {
+                select.value = currentValue;
+            }
+        }
+        
+        function openCategoriesManager() {
+            renderCustomCategories();
+            document.getElementById('categoriesManagerModal').classList.add('active');
+        }
+        
+        function renderCustomCategories() {
+            const container = document.getElementById('customCategoriesList');
+            
+            if (appData.customCategories.length === 0) {
+                container.innerHTML = '<p class="text-center py-4 text-sm text-gray-500">لا توجد فئات مخصصة. أضف فئة جديدة!</p>';
+                return;
+            }
+            
+            container.innerHTML = appData.customCategories.map(cat => `
+                <div class="card mb-2" style="border-right: 3px solid ${cat.color};">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2 flex-1">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: ${cat.color}; color: white;">
+                                <i class="fas ${cat.icon}"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm">${cat.name}</div>
+                                <div class="text-xs text-gray-500">${cat.icon}</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="editCategory('${cat.id}')" class="btn text-xs px-3 py-1" style="background: #3b82f6; color: white;">
+                                <i class="fas fa-edit"></i> تعديل
+                            </button>
+                            <button onclick="deleteCategory('${cat.id}')" class="btn text-xs px-3 py-1" style="background: #ef4444; color: white;">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function openAddCategoryModal() {
+            document.getElementById('categoryModalTitle').textContent = 'إضافة فئة جديدة';
+            document.getElementById('categoryEditId').value = '';
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryIcon').value = '';
+            document.getElementById('categoryColor').value = '#3b82f6';
+            document.querySelectorAll('.icon-option').forEach(btn => btn.classList.remove('selected'));
+            updateCategoryPreview();
+            document.getElementById('addCategoryModal').classList.add('active');
+        }
+        
+        function selectIcon(iconClass) {
+            document.getElementById('categoryIcon').value = iconClass;
+            document.querySelectorAll('.icon-option').forEach(btn => btn.classList.remove('selected'));
+            event.target.closest('.icon-option').classList.add('selected');
+            updateCategoryPreview();
+        }
+        
+        function updateCategoryPreview() {
+            const name = document.getElementById('categoryName').value || 'معاينة';
+            const icon = document.getElementById('categoryIcon').value || 'fa-tag';
+            const color = document.getElementById('categoryColor').value || '#3b82f6';
+            
+            const preview = document.getElementById('categoryPreview');
+            preview.style.background = color;
+            document.getElementById('categoryPreviewIcon').className = 'fas ' + icon;
+            document.getElementById('categoryPreviewText').textContent = ' ' + name;
+        }
+        
+        function handleSaveCategory(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('categoryEditId').value;
+            const category = {
+                id: id || Date.now().toString(),
+                name: document.getElementById('categoryName').value,
+                icon: document.getElementById('categoryIcon').value,
+                color: document.getElementById('categoryColor').value
+            };
+            
+            if (id) {
+                const index = appData.customCategories.findIndex(cat => cat.id === id);
+                if (index !== -1) {
+                    const oldName = appData.customCategories[index].name;
+                    appData.customCategories[index] = category;
+                    appData.expenses.forEach(exp => {
+                        if (exp.category === oldName) exp.category = category.name;
+                    });
+                    alert(`تم تعديل الفئة "${category.name}" بنجاح!`);
+                }
+            } else {
+                appData.customCategories.push(category);
+                alert(`تم إضافة الفئة "${category.name}" بنجاح!`);
+            }
+            
+            saveData();
+            renderCustomCategories();
+            populateCategorySelects();
+            renderExpenses();
+            closeModal('addCategoryModal');
+        }
+        
+        function editCategory(id) {
+            const category = appData.customCategories.find(cat => cat.id === id);
+            if (!category) return;
+            
+            document.getElementById('categoryModalTitle').textContent = 'تعديل الفئة';
+            document.getElementById('categoryEditId').value = id;
+            document.getElementById('categoryName').value = category.name;
+            document.getElementById('categoryIcon').value = category.icon;
+            document.getElementById('categoryColor').value = category.color;
+            
+            document.querySelectorAll('.icon-option').forEach(btn => {
+                if (btn.dataset.icon === category.icon) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+            
+            updateCategoryPreview();
+            document.getElementById('addCategoryModal').classList.add('active');
+        }
+        
+        function deleteCategory(id) {
+            const category = appData.customCategories.find(cat => cat.id === id);
+            if (!category) return;
+            
+            const inUse = appData.expenses.some(exp => exp.category === category.name);
+            
+            if (inUse) {
+                if (!confirm(`الفئة "${category.name}" مستخدمة في مصروفات موجودة. هل تريد حذفها؟ (سيتم تحويل المصروفات إلى فئة "أخرى")`)) {
+                    return;
+                }
+                appData.expenses.forEach(exp => {
+                    if (exp.category === category.name) exp.category = 'أخرى';
+                });
+            } else {
+                if (!confirm(`هل تريد حذف الفئة "${category.name}"؟`)) return;
+            }
+            
+            appData.customCategories = appData.customCategories.filter(cat => cat.id !== id);
+            saveData();
+            renderCustomCategories();
+            populateCategorySelects();
+            renderExpenses();
+            alert(`تم حذف الفئة "${category.name}" بنجاح!`);
+        }
+        
+        function openExpenseModal() {
+            populateCategorySelects();
+            document.getElementById('expenseModal').classList.add('active');
+        }
+        
+        function handleAddExpense(event) {
+            event.preventDefault();
+            const expense = {
+                id: Date.now().toString(),
+                name: document.getElementById('expenseName').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                category: document.getElementById('expenseCategory').value
+            };
+            appData.expenses.push(expense);
+            saveData();
+            closeModal('expenseModal');
+            renderExpenses();
+            alert('تم إضافة المصروف!');
+        }
+        
+        function renderExpenses() {
+            const container = document.getElementById('expensesList');
+            container.innerHTML = appData.expenses.map(exp => {
+                const catInfo = getCategoryInfo(exp.category);
+                return `
+                    <div class="card mb-2" style="border-right: 3px solid ${catInfo.color};">
+                        <div class="flex justify-between">
+                            <div>
+                                <div class="font-bold">${exp.name}</div>
+                                <div class="text-sm text-gray-500">
+                                    <i class="fas ${catInfo.icon}" style="color: ${catInfo.color};"></i>
+                                    ${exp.category}
+                                </div>
+                            </div>
+                            <div class="text-lg font-bold" style="color: #ef4444;">${exp.amount} ج</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            populateCategorySelects();
+            renderExpenses();
+            
+            document.getElementById('categoryColor').addEventListener('input', updateCategoryPreview);
+            document.getElementById('categoryName').addEventListener('input', updateCategoryPreview);
+        });
+    </script>
+</body>
+</html>
