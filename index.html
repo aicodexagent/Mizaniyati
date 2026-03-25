@@ -1998,7 +1998,7 @@
         function renderRecurringExpenses() {
             const container = document.getElementById('recurringExpensesList');
             
-            if (appData.recurringExpenses.length === 0) {
+            if (!appData.recurringExpenses || appData.recurringExpenses.length === 0) {
                 container.innerHTML = '<p class="text-center py-6 text-sm" style="color: var(--text-secondary);">لا توجد مصروفات ثابتة</p>';
                 return;
             }
@@ -2009,9 +2009,13 @@
                     patternText = 'يومي';
                 } else if (rec.pattern === 'weekly') {
                     const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-                    patternText = 'أسبوعي: ' + rec.weekdays.map(d => days[d]).join(', ');
+                    if (rec.weekdays && rec.weekdays.length > 0) {
+                        patternText = 'أسبوعي: ' + rec.weekdays.map(d => days[d]).join(', ');
+                    } else {
+                        patternText = 'أسبوعي: غير محدد';
+                    }
                 } else if (rec.pattern === 'monthly') {
-                    patternText = `شهري في اليوم ${rec.dayOfMonth}`;
+                    patternText = `شهري في اليوم ${rec.dayOfMonth || 'غير محدد'}`;
                 }
                 
                 const billsCount = appData.expenses.filter(exp => exp.recurringId === rec.id).length;
@@ -2543,7 +2547,9 @@
 <script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
 <script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
 <script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
 </body>
+
 
 
 
