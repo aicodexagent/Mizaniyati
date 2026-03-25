@@ -1,1 +1,1 @@
-From Idea to Profit with OnSpace
+Organize your budget and expenses 
