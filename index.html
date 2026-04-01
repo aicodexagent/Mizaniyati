@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="رفيقك لإدارة ميزانيتك بذكاء. تتبع نفقاتك، حقق أهدافك المالية.">
+    <meta name="theme-color" content="#2D6A4F">
+    <meta property="og:title" content="Mizaniyati – ميزانيتي">
+    <meta property="og:description" content="رفيقك لإدارة ميزانيتك بذكاء. تتبع نفقاتك، حقق أهدافك المالية.">
+    <meta property="og:url" content="https://www.onspace.ai">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Mizaniyati">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Mizaniyati – ميزانيتي">
+    <meta name="twitter:image" content="https://via.placeholder.com/1200x630.png?text=Mizaniyati">
+    <title>Mizaniyati – ميزانيتي</title>
+    <link rel="manifest" id="manifestPlaceholder">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { font-family: 'Tajawal', 'Cairo', sans-serif; box-sizing: border-box; }
+        :root {
+            --primary: #2D6A4F;
+            --primary-dark: #1B4D3E;
+            --primary-light: #52B788;
+            --secondary: #1E6091;
+            --bg: #F0F5F2;
+            --card: #ffffff;
+            --text: #212529;
+            --text-muted: #6C757D;
+            --border: #E9ECEF;
+            --red: #E63946;
+            --red-light: #FEF2F2;
+            --green-light: #ECFDF5;
+        }
+        html, body { height: 100%; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+        /* ===== SCREENS ===== */
+        .screen { display: none; min-height: 100vh; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        /* ===== WELCOME SCREEN ===== */
+        #welcomeScreen {
+            background: #F0F5F2;
+            align-items: center;
+            padding: 2rem 1.5rem 2.5rem;
+            text-align: center;
+        }
+        .welcome-logo {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 24px rgba(45,106,79,0.3);
+        }
+        .welcome-logo i { color: white; font-size: 2rem; }
+        .brand-name { font-size: 2.2rem; font-weight: 800; color: var(--text); letter-spacing: -1px; }
+        .brand-line { width: 40px; height: 3px; background: var(--primary); margin: 0.5rem auto 1.5rem; border-radius: 2px; }
+        .welcome-title { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1.3; margin-bottom: 0.75rem; }
+        .welcome-title span { color: var(--primary); }
+        .welcome-sub { font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 320px; margin: 0 auto 2.5rem; }
+        .btn-welcome-primary {
+            display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+            width: 100%; padding: 1rem 2rem;
+            background: var(--primary); color: white;
+            border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 4px 16px rgba(45,106,79,0.3);
+            margin-bottom: 0.75rem;
+        }
+        .btn-welcome-primary:hover { background: var(--primary-dark); transform: scale(1.02); }
+        .btn-welcome-secondary {
+            display: block; width: 100%; padding: 1rem 2rem;
+            background: #E8EDE9; color: var(--text);
+            border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; margin-bottom: 2rem;
+        }
+        .btn-welcome-secondary:hover { background: #D5DDD7; }
+        .users-strip { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 2rem; }
+        .users-avatars { display: flex; }
+        .users-avatars img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid white; margin-right: -10px; object-fit: cover; }
+        .users-text { font-size: 0.9rem; color: var(--text-muted); }
+        .welcome-cards { width: 100%; display: flex; flex-direction: column; gap: 0.75rem; }
+        .welcome-stat-card {
+            background: white; border-radius: 16px; padding: 1rem 1.25rem;
+            display: flex; align-items: center; gap: 1rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .welcome-stat-card img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; }
+        .welcome-stat-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: var(--green-light); display: flex; align-items: center; justify-content: center;
+        }
+        .welcome-stat-icon i { color: var(--primary); font-size: 1.1rem; }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); }
+        .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+        .welcome-budget-bar { flex: 1; }
+        .budget-bar-label { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+        .budget-bar-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+        .budget-bar-fill { height: 100%; background: var(--primary); border-radius: 4px; width: 75%; }
+        .welcome-footer { margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+
+        /* ===== SETUP SCREEN ===== */
+        #setupScreen {
+            background: var(--bg);
+            padding: 2rem 1.25rem;
+            overflow-y: auto;
+        }
+        .setup-header { text-align: center; margin-bottom: 2rem; }
+        .setup-icon {
+            width: 60px; height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem;
+        }
+        .setup-icon i { color: white; font-size: 1.5rem; }
+        .setup-title { font-size: 1.6rem; font-weight: 800; color: var(--text); }
+        .setup-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem; }
+        .setup-card { background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); max-width: 480px; margin: 0 auto; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+        .form-input {
+            width: 100%; padding: 0.75rem 1rem;
+            border: 1.5px solid var(--border); border-radius: 14px;
+            font-size: 0.95rem; color: var(--text);
+            background: #F8FAF9; transition: all 0.2s;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(45,106,79,0.15); background: white; }
+        .form-select { appearance: none; cursor: pointer; }
+        .btn-setup {
+            width: 100%; padding: 0.9rem;
+            background: var(--primary); color: white;
+            border: none; border-radius: 50px; font-size: 1rem; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; margin-top: 0.5rem;
+            box-shadow: 0 4px 16px rgba(45,106,79,0.25);
+            font-family: 'Tajawal', sans-serif;
+        }
+        .btn-setup:hover { background: var(--primary-dark); transform: scale(1.01); }
+
+        /* ===== MAIN APP ===== */
+        #mainApp { background: var(--bg); padding-bottom: 80px; flex: 1; overflow-y: auto; }
+
+        /* ===== TOP HEADER ===== */
+        .app-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.25rem 0.75rem;
+            background: var(--bg);
+        }
+        .header-logo { font-size: 1.3rem; font-weight: 800; color: var(--text); }
+        .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .currency-badge {
+            display: flex; align-items: center; gap: 0.35rem;
+            background: white; border-radius: 10px; padding: 0.4rem 0.7rem;
+            font-size: 0.85rem; font-weight: 600; color: var(--text);
+            cursor: pointer; box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+        }
+        .avatar-btn {
+            width: 36px; height: 36px; border-radius: 50%; overflow: hidden;
+            cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        .avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
+        .settings-btn {
+            width: 36px; height: 36px; border-radius: 50%; background: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+            border: none; color: var(--text-muted);
+        }
+
+        /* ===== HERO BALANCE CARD ===== */
+        .hero-card {
+            margin: 0.5rem 1.25rem 1rem;
+            background: linear-gradient(135deg, #2D6A4F 0%, #1B7A5A 50%, #1E6091 100%);
+            border-radius: 24px;
+            padding: 1.5rem;
+            color: white;
+            box-shadow: 0 8px 24px rgba(45,106,79,0.35);
+            position: relative; overflow: hidden;
+        }
+        .hero-card::before {
+            content: '';
+            position: absolute; top: -30px; left: -30px;
+            width: 160px; height: 160px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+        .hero-card::after {
+            content: '';
+            position: absolute; bottom: -40px; right: -20px;
+            width: 120px; height: 120px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+        .hero-label { font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.4rem; }
+        .hero-amount { font-size: 2.4rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 1.25rem; line-height: 1; }
+        .hero-amount .currency { font-size: 1.4rem; margin-right: 0.25rem; }
+        .hero-footer { display: flex; align-items: center; justify-content: space-between; }
+        .hero-detail-btn {
+            background: rgba(255,255,255,0.2); color: white;
+            border: none; border-radius: 30px; padding: 0.5rem 1rem;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            backdrop-filter: blur(10px); transition: all 0.2s;
+        }
+        .hero-detail-btn:hover { background: rgba(255,255,255,0.3); }
+        .hero-savings {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: rgba(255,255,255,0.15); border-radius: 30px; padding: 0.5rem 0.75rem;
+            backdrop-filter: blur(10px);
+        }
+        .hero-savings-icon { width: 26px; height: 26px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+        .hero-savings-text { font-size: 0.8rem; opacity: 0.9; }
+        .hero-savings-pct { font-size: 0.85rem; font-weight: 700; }
+
+        /* ===== SECTION HEADER ===== */
+        .section-header { display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem; margin-bottom: 0.75rem; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+        .section-date { font-size: 0.85rem; color: var(--primary); font-weight: 600; }
+        .section-link { font-size: 0.85rem; color: var(--primary); font-weight: 600; cursor: pointer; }
+
+        /* ===== MONTHLY BUDGET CARD ===== */
+        .budget-summary-card {
+            margin: 0 1.25rem 1rem;
+            background: white; border-radius: 20px; padding: 1.25rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .budget-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+        .budget-spent-label { font-size: 0.85rem; color: var(--text-muted); }
+        .budget-spent-val { font-size: 0.95rem; font-weight: 700; color: var(--text); direction: ltr; }
+        .budget-progress-track { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin-bottom: 1rem; }
+        .budget-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); border-radius: 5px; transition: width 0.5s ease; }
+        .budget-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .budget-stat-box {
+            background: #F8FAF9; border-radius: 14px; padding: 0.85rem 1rem;
+            display: flex; flex-direction: column; gap: 0.25rem;
+        }
+        .budget-stat-box.alert-box { background: var(--red-light); }
+        .budget-stat-icon { font-size: 1.1rem; margin-bottom: 0.15rem; }
+        .budget-stat-label { font-size: 0.78rem; color: var(--text-muted); }
+        .budget-stat-val { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+        .budget-stat-box.alert-box .budget-stat-val { color: var(--red); }
+
+        /* ===== TRANSACTION LIST ===== */
+        .transactions-wrap { margin: 0 1.25rem; }
+        .transaction-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.9rem 0; border-bottom: 1px solid var(--border);
+            cursor: pointer; transition: all 0.15s;
+        }
+        .transaction-item:last-child { border-bottom: none; }
+        .transaction-item:hover { opacity: 0.8; }
+        .tx-left { display: flex; align-items: center; gap: 0.9rem; }
+        .tx-icon {
+            width: 44px; height: 44px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 1.15rem;
+        }
+        .tx-name { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.1rem; }
+        .tx-meta { font-size: 0.8rem; color: var(--text-muted); }
+        .tx-amount { font-size: 1rem; font-weight: 700; direction: ltr; white-space: nowrap; }
+        .tx-amount.expense { color: var(--red); }
+        .tx-amount.income { color: var(--primary); }
+        .tx-currency { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); margin-top: 0.1rem; text-align: left; }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white;
+            display: flex; align-items: center; justify-content: space-around;
+            padding: 0.6rem 0.5rem calc(0.6rem + env(safe-area-inset-bottom));
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            border-top: 1px solid var(--border);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 0.2rem; padding: 0.3rem 0.75rem; cursor: pointer;
+            transition: all 0.2s; border-radius: 12px; min-width: 56px;
+            border: none; background: none; color: var(--text-muted);
+        }
+        .nav-item i { font-size: 1.2rem; transition: transform 0.2s; }
+        .nav-item span { font-size: 0.7rem; font-weight: 600; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active i { transform: scale(1.1); }
+        .nav-add-btn {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(45,106,79,0.4);
+            cursor: pointer; border: none; transition: all 0.2s;
+        }
+        .nav-add-btn i { color: white; font-size: 1.4rem; }
+        .nav-add-btn:hover { transform: scale(1.08); background: var(--primary-dark); }
+
+        /* ===== REPORTS SCREEN ===== */
+        #reportsScreen { background: var(--bg); padding-bottom: 80px; overflow-y: auto; }
+        .period-tabs {
+            display: flex; gap: 0.5rem; padding: 0.75rem 1.25rem;
+            background: var(--bg);
+        }
+        .period-tab {
+            flex: 1; text-align: center; padding: 0.55rem 0.5rem;
+            border-radius: 30px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; border: none; background: none;
+            color: var(--text-muted); font-family: 'Tajawal', sans-serif;
+        }
+        .period-tab.active { background: var(--primary); color: white; }
+        .report-hero {
+            margin: 0 1.25rem 1rem;
+            background: linear-gradient(135deg, #2D6A4F, #1B7A5A, #1E6091);
+            border-radius: 20px; padding: 1.25rem; color: white;
+            box-shadow: 0 6px 20px rgba(45,106,79,0.3);
+        }
+        .report-hero-label { font-size: 0.9rem; opacity: 0.85; margin-bottom: 0.3rem; }
+        .report-hero-amount { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; direction: ltr; text-align: right; }
+        .report-compare { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; opacity: 0.9; }
+        .report-compare i { font-size: 0.8rem; }
+        .chart-card { margin: 0 1.25rem 1rem; background: white; border-radius: 20px; padding: 1.25rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .chart-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; }
+        .chart-wrap { display: flex; align-items: center; justify-content: center; padding: 0.5rem 0; }
+        .chart-center-label { text-align: center; }
+        .chart-center-sub { font-size: 0.75rem; color: var(--text-muted); }
+        .chart-center-main { font-size: 1rem; font-weight: 700; color: var(--primary); }
+        .category-list { list-style: none; padding: 0; margin: 0; }
+        .category-list-item {
+            display: flex; align-items: center; gap: 0.85rem;
+            padding: 0.85rem 0; border-bottom: 1px solid var(--border);
+        }
+        .category-list-item:last-child { border-bottom: none; }
+        .cat-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .cat-info { flex: 1; }
+        .cat-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+        .cat-pct-label { font-size: 0.75rem; color: var(--text-muted); }
+        .cat-bar-track { height: 4px; background: var(--border); border-radius: 2px; margin-top: 0.3rem; overflow: hidden; }
+        .cat-bar-fill { height: 100%; border-radius: 2px; }
+        .cat-amount { text-align: left; }
+        .cat-amount-val { font-size: 0.95rem; font-weight: 700; color: var(--text); direction: ltr; }
+        .cat-amount-unit { font-size: 0.75rem; color: var(--text-muted); }
+        .bar-chart-wrap { padding: 0.5rem 0; }
+        .bar-chart-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; height: 140px; }
+        .bar-day { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: 1; }
+        .bar-col { width: 100%; background: var(--border); border-radius: 8px 8px 0 0; position: relative; min-height: 8px; transition: height 0.5s; }
+        .bar-col.active { background: var(--primary); }
+        .bar-label { font-size: 0.7rem; color: var(--text-muted); }
+        .export-row { display: flex; gap: 0.75rem; margin: 0 1.25rem 1rem; }
+        .export-btn {
+            flex: 1; padding: 0.8rem; border-radius: 14px;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            border: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            transition: all 0.2s; font-family: 'Tajawal', sans-serif;
+        }
+        .export-btn.primary { background: var(--primary); color: white; }
+        .export-btn.secondary { background: white; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        .export-btn:hover { opacity: 0.9; transform: scale(1.01); }
+
+        /* ===== ADD TRANSACTION SCREEN ===== */
+        #addScreen { background: var(--bg); padding-bottom: 100px; overflow-y: auto; }
+        .add-amount-section { text-align: center; padding: 2rem 1.25rem 1.5rem; }
+        .add-amount-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .add-amount-display { font-size: 3rem; font-weight: 800; color: var(--border); letter-spacing: -2px; transition: color 0.2s; }
+        .add-amount-display.has-value { color: var(--text); }
+        .add-amount-display input {
+            background: none; border: none; outline: none; text-align: center;
+            width: 100%; font-size: 3rem; font-weight: 800; color: inherit; letter-spacing: -2px;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .currency-selector {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            margin-top: 0.5rem; padding: 0.4rem 1rem; border-radius: 30px;
+            background: white; cursor: pointer; box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+            font-size: 0.9rem; font-weight: 700; color: var(--primary);
+            border: none; font-family: 'Tajawal', sans-serif;
+        }
+        .currency-selector i { font-size: 0.75rem; }
+        .add-section { margin: 0 1.25rem 1rem; }
+        .add-section-label { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.75rem; padding-right: 0.25rem; border-right: 3px solid var(--primary); }
+        .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+        .cat-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+            padding: 0.75rem 0.4rem; border-radius: 16px;
+            background: white; border: 2px solid transparent; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+        }
+        .cat-btn.selected { border-color: var(--primary); background: var(--green-light); }
+        .cat-btn-icon {
+            width: 42px; height: 42px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+        .cat-btn.selected .cat-btn-icon { background: var(--primary); color: white !important; }
+        .cat-btn-name { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
+        .cat-btn.selected .cat-btn-name { color: var(--primary); }
+        .date-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: white; border-radius: 14px; padding: 0.85rem 1rem;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+        }
+        .date-label { font-size: 0.85rem; color: var(--text-muted); }
+        .date-val-row { display: flex; align-items: center; gap: 0.5rem; }
+        .date-val { font-size: 0.9rem; font-weight: 600; color: var(--text); direction: ltr; }
+        .date-val input { background: none; border: none; outline: none; font-size: 0.9rem; font-weight: 600; color: var(--text); font-family: 'Tajawal', sans-serif; cursor: pointer; }
+        .date-icon { color: var(--primary); font-size: 1rem; }
+        .notes-input {
+            width: 100%; padding: 0.85rem 1rem;
+            background: white; border: none; border-radius: 14px;
+            font-size: 0.9rem; color: var(--text); resize: none;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.05); outline: none;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .notes-input::placeholder { color: var(--text-muted); }
+        .receipt-area {
+            border: 2px dashed #ADB5BD; border-radius: 16px; padding: 1.5rem;
+            display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+            cursor: pointer; transition: all 0.2s; background: white;
+        }
+        .receipt-area:hover { border-color: var(--primary); background: var(--green-light); }
+        .receipt-area i { font-size: 1.8rem; color: var(--text-muted); }
+        .receipt-label { font-size: 0.85rem; color: var(--text-muted); }
+        .receipt-preview { display: none; width: 100%; border-radius: 12px; overflow: hidden; max-height: 150px; }
+        .receipt-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .btn-save-tx {
+            width: 100%; padding: 1rem;
+            background: var(--primary); color: white;
+            border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+            box-shadow: 0 4px 16px rgba(45,106,79,0.3);
+            transition: all 0.2s; font-family: 'Tajawal', sans-serif;
+        }
+        .btn-save-tx:hover { background: var(--primary-dark); transform: scale(1.01); }
+
+        /* ===== BUDGET SCREEN ===== */
+        #budgetScreen { background: var(--bg); padding-bottom: 80px; overflow-y: auto; }
+        .budget-cat-card {
+            margin: 0 1.25rem 0.75rem;
+            background: white; border-radius: 16px; padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .budget-cat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+        .budget-cat-left { display: flex; align-items: center; gap: 0.7rem; }
+        .budget-cat-vals { font-size: 0.8rem; color: var(--text-muted); direction: ltr; }
+        .budget-edit-btn {
+            background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; transition: color 0.2s;
+        }
+        .budget-edit-btn:hover { color: var(--primary); }
+
+        /* ===== MODALS ===== */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            align-items: flex-end; justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-sheet {
+            background: white; border-radius: 24px 24px 0 0;
+            width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+            padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 1.25rem; }
+        .modal-title { font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 1.25rem; }
+        .modal-form-group { margin-bottom: 1rem; }
+        .modal-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+        .modal-input {
+            width: 100%; padding: 0.7rem 0.9rem;
+            border: 1.5px solid var(--border); border-radius: 12px;
+            font-size: 0.9rem; color: var(--text); font-family: 'Tajawal', sans-serif;
+            background: #F8FAF9; transition: all 0.2s;
+        }
+        .modal-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(45,106,79,0.12); background: white; }
+        .modal-btn-row { display: flex; gap: 0.75rem; margin-top: 1rem; }
+        .modal-btn-primary {
+            flex: 1; padding: 0.85rem; background: var(--primary); color: white;
+            border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 700;
+            cursor: pointer; font-family: 'Tajawal', sans-serif; transition: all 0.2s;
+        }
+        .modal-btn-primary:hover { background: var(--primary-dark); }
+        .modal-btn-secondary {
+            flex: 1; padding: 0.85rem; background: #E9ECEF; color: var(--text);
+            border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; font-family: 'Tajawal', sans-serif; transition: all 0.2s;
+        }
+        .modal-btn-secondary:hover { background: #D5DDD7; }
+
+        /* ===== TRANSACTION DETAIL MODAL ===== */
+        .tx-detail-icon { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem; }
+        .tx-detail-amount { text-align: center; font-size: 2rem; font-weight: 800; direction: ltr; margin-bottom: 0.25rem; }
+        .tx-detail-name { text-align: center; font-size: 1rem; font-weight: 600; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .tx-detail-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+        .tx-detail-row:last-child { border-bottom: none; }
+        .tx-detail-key { font-size: 0.85rem; color: var(--text-muted); }
+        .tx-detail-val { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+        .tx-detail-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
+        .btn-delete-tx { flex: 1; padding: 0.85rem; background: var(--red-light); color: var(--red); border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: 'Tajawal', sans-serif; }
+        .btn-edit-tx { flex: 1; padding: 0.85rem; background: var(--green-light); color: var(--primary); border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: 'Tajawal', sans-serif; }
+
+        /* ===== CURRENCY MODAL ===== */
+        .currency-option {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.85rem 0; border-bottom: 1px solid var(--border); cursor: pointer;
+        }
+        .currency-option:last-child { border-bottom: none; }
+        .currency-option:hover { opacity: 0.7; }
+        .currency-option-name { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+        .currency-option-code { font-size: 0.85rem; color: var(--text-muted); }
+        .currency-option.active .currency-option-name { color: var(--primary); }
+        .currency-check { color: var(--primary); font-size: 1rem; }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+            background: #212529; color: white; border-radius: 30px;
+            padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 600;
+            z-index: 2000; display: none; white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2); align-items: center; gap: 0.5rem;
+        }
+        .toast.active { display: flex; animation: toastIn 0.3s ease; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .toast.success { background: var(--primary); }
+        .toast.error { background: var(--red); }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state { text-align: center; padding: 2.5rem 1rem; }
+        .empty-state i { font-size: 2.5rem; color: var(--border); margin-bottom: 0.75rem; }
+        .empty-state-text { font-size: 0.95rem; color: var(--text-muted); }
+
+        /* ===== RECEIPT IMG ===== */
+        .receipt-img-wrap { position: relative; }
+        .receipt-img-wrap img { width: 100%; border-radius: 12px; max-height: 150px; object-fit: cover; }
+        .receipt-remove {
+            position: absolute; top: 6px; left: 6px;
+            background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%;
+            width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.8rem;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+<!-- ============================
+     WELCOME SCREEN
+     ============================ -->
+<div id="welcomeScreen" class="screen">
+    <div class="welcome-logo">
+        <i class="fas fa-wallet"></i>
+    </div>
+    <div class="brand-name">Mizaniyati</div>
+    <div class="brand-line"></div>
+    <h1 class="welcome-title">مرحباً بك في <span>ميزانيتي</span></h1>
+    <p class="welcome-sub">رفيقك لإدارة ميزانيتك بذكاء. تتبع نفقاتك، حقق أهدافك المالية، واستمتع براحة البال التي تأتي مع الوضوح المالي.</p>
+
+    <button class="btn-welcome-primary" onclick="showSetup()">
+        ابدأ الآن
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    <button class="btn-welcome-secondary" onclick="showMainApp()">تسجيل الدخول</button>
+
+    <div class="users-strip">
+        <div class="users-avatars">
+            <img src="https://i.pravatar.cc/40?img=1" alt="مستخدم">
+            <img src="https://i.pravatar.cc/40?img=5" alt="مستخدم">
+            <img src="https://i.pravatar.cc/40?img=9" alt="مستخدم">
+        </div>
+        <span class="users-text">انضم إلى أكثر من +10k مستخدم</span>
+    </div>
+
+    <div class="welcome-cards">
+        <div class="welcome-stat-card">
+            <img src="https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=200&q=80" alt="ادخار">
+            <div>
+                <div class="welcome-stat-icon" style="background: #ECFDF5;">
+                    <i class="fas fa-chart-line" style="color:#2D6A4F;"></i>
+                </div>
+            </div>
+            <div>
+                <div class="stat-label">الادخار الشهري</div>
+                <div class="stat-value">+2,450 ر.س</div>
+            </div>
+        </div>
+        <div class="welcome-stat-card">
+            <div class="welcome-budget-bar" style="flex:1;">
+                <div class="budget-bar-label">
+                    <span>اكتمال الميزانية: 75%</span>
+                </div>
+                <div class="budget-bar-track"><div class="budget-bar-fill"></div></div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1604594849809-dfedbc827105?w=200&q=80" alt="ميزانية" style="width:60px;height:60px;border-radius:12px;object-fit:cover;">
+        </div>
+    </div>
+
+    <div class="welcome-footer">MIZANIYATI SANCTUARY 2024 ©</div>
+</div>
+
+<!-- ============================
+     SETUP SCREEN
+     ============================ -->
+<div id="setupScreen" class="screen" style="background:var(--bg); overflow-y:auto; padding-bottom:2rem;">
+    <div style="padding:1.5rem 1.25rem;">
+        <div class="setup-header">
+            <div class="setup-icon"><i class="fas fa-wallet"></i></div>
+            <div class="setup-title">إعداد حسابك</div>
+            <div class="setup-sub">أخبرنا ببعض التفاصيل لنبدأ معك</div>
+        </div>
+        <div class="setup-card">
+            <form onsubmit="handleSetup(event)">
+                <div class="form-group">
+                    <label class="form-label">الاسم (اختياري)</label>
+                    <input type="text" id="setupName" class="form-input" placeholder="مثال: أحمد محمد">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">نوع المستخدم</label>
+                    <select id="setupUserType" class="form-input form-select" onchange="toggleSetupType()">
+                        <option value="employee">موظف – راتب ثابت</option>
+                        <option value="freelancer">عامل حر / دخل متغير</option>
+                    </select>
+                </div>
+                <div id="salarySection">
+                    <div class="form-group">
+                        <label class="form-label">الراتب / الدخل الشهري</label>
+                        <input type="number" id="setupSalary" class="form-input" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">يوم نزول الراتب</label>
+                        <input type="number" id="setupPayday" class="form-input" placeholder="مثال: 25" min="1" max="31" value="25">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الميزانية الشهرية المحددة</label>
+                    <input type="number" id="setupBudget" class="form-input" placeholder="0.00" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">العملة</label>
+                    <select id="setupCurrency" class="form-input form-select">
+                        <option value="EGP">جنيه مصري (ج.م)</option>
+                        <option value="SAR">ريال سعودي (ر.س)</option>
+                        <option value="AED">درهم إماراتي (د.إ)</option>
+                        <option value="KWD">دينار كويتي (د.ك)</option>
+                        <option value="USD">دولار أمريكي ($)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الرصيد الاحتياطي الأولي (اختياري)</label>
+                    <input type="number" id="setupEmergency" class="form-input" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <button type="submit" class="btn-setup">
+                    <i class="fas fa-check-circle"></i> ابدأ الآن
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================
+     MAIN APP
+     ============================ -->
+<div id="mainApp" class="screen" style="flex-direction:column; background:var(--bg);">
+    <!-- HOME SCREEN -->
+    <div id="homeScreen" style="overflow-y:auto; padding-bottom:80px; flex:1;">
+        <div class="app-header">
+            <button class="settings-btn" onclick="openSettingsModal()"><i class="fas fa-cog"></i></button>
+            <span class="header-logo">Mizaniyati</span>
+            <div class="header-actions">
+                <button class="currency-badge" onclick="openCurrencyModal()">
+                    <i class="fas fa-wallet" style="color:var(--primary);"></i>
+                    <span id="currencyBadgeLabel">ج.م</span>
+                    <i class="fas fa-chevron-down" style="font-size:0.7rem; color:var(--text-muted);"></i>
+                </button>
+                <div class="avatar-btn">
+                    <img src="https://i.pravatar.cc/80?img=3" alt="المستخدم">
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Balance -->
+        <div class="hero-card">
+            <div class="hero-label">رصيد الميزانية</div>
+            <div class="hero-amount"><span class="currency" id="heroBalanceUnit">ج.م</span> <span id="heroBalance">0.00</span></div>
+            <div class="hero-footer">
+                <button class="hero-detail-btn" onclick="switchToTab('budget')">تفاصيل المحفظة</button>
+                <div class="hero-savings">
+                    <div class="hero-savings-icon"><i class="fas fa-chart-line"></i></div>
+                    <div>
+                        <div class="hero-savings-text">المدخرات</div>
+                        <div class="hero-savings-pct" id="heroPct">+0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Budget Summary -->
+        <div class="section-header">
+            <div class="section-title">ملخص الميزانية الشهرية</div>
+            <div class="section-date" id="currentMonthLabel"></div>
+        </div>
+        <div class="budget-summary-card">
+            <div class="budget-row">
+                <span class="budget-spent-label">تم صرفه</span>
+                <span class="budget-spent-val" id="budgetSpentLabel">0 / 0</span>
+            </div>
+            <div class="budget-progress-track">
+                <div class="budget-progress-fill" id="budgetProgressFill" style="width:0%"></div>
+            </div>
+            <div class="budget-stats-grid">
+                <div class="budget-stat-box alert-box">
+                    <div class="budget-stat-icon">⚠️</div>
+                    <div class="budget-stat-label">تجاوز الميزانية</div>
+                    <div class="budget-stat-val" id="budgetOverspend">0</div>
+                </div>
+                <div class="budget-stat-box">
+                    <div class="budget-stat-icon">🕐</div>
+                    <div class="budget-stat-label">المتبقي للأسبوع</div>
+                    <div class="budget-stat-val" id="weeklyRemaining">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section-header">
+            <div class="section-title">أحدث المعاملات</div>
+            <span class="section-link" onclick="switchToTab('reports')">عرض الكل</span>
+        </div>
+        <div style="margin: 0 1.25rem; background:white; border-radius:20px; padding:0.25rem 1rem; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+            <div id="recentTransactions"></div>
+        </div>
+    </div>
+
+    <!-- REPORTS SCREEN -->
+    <div id="reportsScreen" style="display:none; overflow-y:auto; padding-bottom:80px; flex:1;">
+        <div class="app-header">
+            <button class="settings-btn" onclick="openSettingsModal()"><i class="fas fa-cog"></i></button>
+            <span class="header-logo">Mizaniyati</span>
+            <div class="avatar-btn"><img src="https://i.pravatar.cc/80?img=3" alt="المستخدم"></div>
+        </div>
+
+        <div class="period-tabs">
+            <button class="period-tab active" onclick="setPeriod('monthly', this)">شهري</button>
+            <button class="period-tab" onclick="setPeriod('weekly', this)">أسبوعي</button>
+            <button class="period-tab" onclick="setPeriod('yearly', this)">سنوي</button>
+        </div>
+
+        <div class="report-hero">
+            <div class="report-hero-label" id="reportPeriodLabel">إجمالي المصاريف (هذا الشهر)</div>
+            <div class="report-hero-amount"><span id="reportTotal">0.00</span> <span id="reportUnit">ج.م</span></div>
+            <div class="report-compare">
+                <i class="fas fa-arrow-down"></i>
+                <span id="reportCompare">أقل بـ 0% عن الفترة الماضية</span>
+            </div>
+        </div>
+
+        <!-- Donut Chart -->
+        <div class="chart-card">
+            <div class="chart-title">توزيع الإنفاق حسب الفئات</div>
+            <div style="position:relative; max-width:220px; margin:0 auto 1rem;">
+                <canvas id="donutChart" style="width:100%;"></canvas>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                    <div style="font-size:0.75rem;color:var(--text-muted);">الأكثر صرفاً</div>
+                    <div style="font-size:1rem;font-weight:700;color:var(--primary);" id="topCatLabel">–</div>
+                </div>
+            </div>
+            <ul class="category-list" id="categoryBreakdown"></ul>
+        </div>
+
+        <!-- Daily Analysis -->
+        <div class="chart-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                <div class="chart-title" style="margin:0;">تحليل الإنفاق اليومي</div>
+                <span style="font-size:0.75rem; color:var(--text-muted); background:var(--border); padding:0.2rem 0.6rem; border-radius:20px;">آخر 7 أيام</span>
+            </div>
+            <div class="bar-chart-row" id="dailyChart"></div>
+        </div>
+
+        <!-- Export -->
+        <div class="export-row">
+            <button class="export-btn primary" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+            <button class="export-btn secondary" onclick="exportCSV()"><i class="fas fa-file-csv"></i> Excel</button>
+            <button class="export-btn secondary" onclick="exportJSON()"><i class="fas fa-database"></i> نسخة احتياطية</button>
+        </div>
+    </div>
+
+    <!-- ADD TRANSACTION SCREEN -->
+    <div id="addScreen" style="display:none; overflow-y:auto; padding-bottom:100px; flex:1;">
+        <div class="app-header">
+            <button onclick="switchToTab('home')" style="background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;"><i class="fas fa-arrow-right"></i></button>
+            <span class="header-logo">ميزانيتي</span>
+            <div class="avatar-btn"><img src="https://i.pravatar.cc/80?img=3" alt="المستخدم"></div>
+        </div>
+
+        <div class="add-amount-section">
+            <div class="add-amount-label">المبلغ المصروف</div>
+            <div class="add-amount-display" id="amountDisplay">
+                <input type="number" id="amountInput" placeholder="0.00" min="0" step="0.01" oninput="updateAmountDisplay()">
+            </div>
+            <button class="currency-selector" onclick="openCurrencyModal()">
+                <span id="addCurrencyLabel">جنيه مصري</span>
+                <i class="fas fa-exchange-alt"></i>
+            </button>
+        </div>
+
+        <div class="add-section">
+            <div class="add-section-label">الفئة</div>
+            <div class="category-grid" id="categoryGrid"></div>
+        </div>
+
+        <div class="add-section">
+            <div class="add-section-label">التاريخ</div>
+            <div class="date-row">
+                <span class="date-label">التاريخ</span>
+                <div class="date-val-row">
+                    <input type="date" id="txDate" class="date-val">
+                    <i class="fas fa-calendar-alt date-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="add-section">
+            <div class="add-section-label">ملاحظات (اختياري)</div>
+            <textarea class="notes-input" id="txNote" rows="2" placeholder="أضف تفاصيل المصروف هنا..."></textarea>
+        </div>
+
+        <div class="add-section">
+            <div class="add-section-label">صورة الإيصال</div>
+            <div class="receipt-area" id="receiptArea" onclick="triggerReceiptUpload()">
+                <div id="receiptPlaceholder" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;">
+                    <i class="fas fa-camera-retro"></i>
+                    <span class="receipt-label">إرفاق صورة</span>
+                </div>
+                <div id="receiptPreview" style="display:none;width:100%;">
+                    <div class="receipt-img-wrap">
+                        <img id="receiptPreviewImg" src="" alt="الإيصال">
+                        <button class="receipt-remove" onclick="removeReceipt(event)"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            </div>
+            <input type="file" id="receiptInput" accept="image/*" style="display:none;" onchange="previewReceipt(event)">
+        </div>
+
+        <div class="add-section">
+            <button class="btn-save-tx" onclick="saveTx()">
+                <i class="fas fa-check-circle"></i> حفظ المصروف
+            </button>
+        </div>
+    </div>
+
+    <!-- BUDGET SCREEN -->
+    <div id="budgetScreen" style="display:none; overflow-y:auto; padding-bottom:80px; flex:1;">
+        <div class="app-header">
+            <button class="settings-btn" onclick="openSettingsModal()"><i class="fas fa-cog"></i></button>
+            <span class="header-logo">الميزانية</span>
+            <button onclick="openAddBudgetModal()" style="background:var(--primary);color:white;border:none;border-radius:10px;padding:0.4rem 0.8rem;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'Tajawal',sans-serif;">+ إضافة</button>
+        </div>
+
+        <!-- Total Budget Card -->
+        <div class="hero-card" style="margin-bottom:1rem;">
+            <div class="hero-label">إجمالي الميزانية الشهرية</div>
+            <div class="hero-amount"><span class="currency" id="budgetHeroUnit">ج.م</span> <span id="budgetHeroTotal">0.00</span></div>
+            <div style="margin-top:0.75rem;">
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;opacity:0.85;margin-bottom:0.4rem;">
+                    <span>تم الإنفاق</span>
+                    <span id="budgetHeroSpentPct">0%</span>
+                </div>
+                <div style="height:8px;background:rgba(255,255,255,0.3);border-radius:4px;overflow:hidden;">
+                    <div id="budgetHeroBar" style="height:100%;background:white;border-radius:4px;width:0%;transition:width 0.5s;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <div class="section-title">الميزانية حسب الفئات</div>
+            <span class="section-link" onclick="openAddBudgetModal()">+ إضافة فئة</span>
+        </div>
+        <div id="budgetCategoryList"></div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" id="navHome" onclick="switchToTab('home')">
+            <i class="fas fa-th-large"></i>
+            <span>الرئيسية</span>
+        </button>
+        <button class="nav-item" id="navReports" onclick="switchToTab('reports')">
+            <i class="fas fa-chart-bar"></i>
+            <span>التقارير</span>
+        </button>
+        <button class="nav-add-btn" onclick="switchToTab('add')" title="إضافة معاملة">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="nav-item" id="navBudget" onclick="switchToTab('budget')">
+            <i class="fas fa-wallet"></i>
+            <span>الميزانية</span>
+        </button>
+        <button class="nav-item" id="navSettings" onclick="openSettingsModal()">
+            <i class="fas fa-user-circle"></i>
+            <span>حسابي</span>
+        </button>
+    </nav>
+</div>
+
+<!-- ============================
+     MODALS
+     ============================ -->
+
+<!-- Transaction Detail Modal -->
+<div class="modal-overlay" id="txDetailModal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div id="txDetailContent"></div>
+    </div>
+</div>
+
+<!-- Currency Modal -->
+<div class="modal-overlay" id="currencyModal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title">اختر العملة</div>
+        <div id="currencyList"></div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title">الإعدادات</div>
+        <form onsubmit="saveSettings(event)">
+            <div class="modal-form-group">
+                <label class="modal-label">الاسم</label>
+                <input type="text" class="modal-input" id="settingsName" placeholder="اسمك">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">الراتب / الدخل الشهري</label>
+                <input type="number" class="modal-input" id="settingsSalary" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">الميزانية الشهرية</label>
+                <input type="number" class="modal-input" id="settingsBudget" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">يوم الراتب</label>
+                <input type="number" class="modal-input" id="settingsPayday" placeholder="25" min="1" max="31">
+            </div>
+            <div class="modal-btn-row">
+                <button type="submit" class="modal-btn-primary">حفظ</button>
+                <button type="button" class="modal-btn-secondary" onclick="closeModal('settingsModal')">إلغاء</button>
+            </div>
+            <button type="button" onclick="resetApp()" style="width:100%;margin-top:0.75rem;padding:0.75rem;background:none;border:1px solid var(--red);color:var(--red);border-radius:50px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'Tajawal',sans-serif;">
+                <i class="fas fa-trash-alt"></i> حذف جميع البيانات
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Budget Category Modal -->
+<div class="modal-overlay" id="addBudgetModal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title" id="budgetModalTitle">إضافة ميزانية فئة</div>
+        <form onsubmit="saveBudgetCategory(event)">
+            <input type="hidden" id="budgetEditCat">
+            <div class="modal-form-group">
+                <label class="modal-label">الفئة</label>
+                <select class="modal-input" id="budgetCatSelect"></select>
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">الحد الأقصى للإنفاق</label>
+                <input type="number" class="modal-input" id="budgetCatLimit" placeholder="0.00" min="0" step="0.01" required>
+            </div>
+            <div class="modal-btn-row">
+                <button type="submit" class="modal-btn-primary">حفظ</button>
+                <button type="button" class="modal-btn-secondary" onclick="closeModal('addBudgetModal')">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Import JSON input -->
+<input type="file" id="importInput" accept=".json" style="display:none;" onchange="importData(event)">
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==========================================
+// DATA LAYER
+// ==========================================
+const CURRENCIES = {
+    EGP: { label: 'جنيه مصري', symbol: 'ج.م', short: 'ج.م' },
+    SAR: { label: 'ريال سعودي', symbol: 'ر.س', short: 'ر.س' },
+    AED: { label: 'درهم إماراتي', symbol: 'د.إ', short: 'د.إ' },
+    KWD: { label: 'دينار كويتي', symbol: 'د.ك', short: 'د.ك' },
+    USD: { label: 'دولار أمريكي', symbol: '$', short: '$' }
+};
+
+const CATEGORIES = [
+    { id: 'food',     name: 'طعام',       icon: 'fas fa-utensils',         color: '#F97316', bg: '#FFF7ED' },
+    { id: 'shopping', name: 'تسوق',       icon: 'fas fa-shopping-bag',     color: '#8B5CF6', bg: '#F5F3FF' },
+    { id: 'home',     name: 'سكن',        icon: 'fas fa-home',             color: '#3B82F6', bg: '#EFF6FF' },
+    { id: 'transport',name: 'نقل',        icon: 'fas fa-car',              color: '#10B981', bg: '#ECFDF5' },
+    { id: 'bills',    name: 'فواتير',     icon: 'fas fa-bolt',             color: '#EAB308', bg: '#FEFCE8' },
+    { id: 'health',   name: 'صحة',        icon: 'fas fa-plus-square',      color: '#EF4444', bg: '#FEF2F2' },
+    { id: 'entertainment', name: 'ترفيه', icon: 'fas fa-theater-masks',    color: '#EC4899', bg: '#FDF2F8' },
+    { id: 'other',    name: 'أخرى',       icon: 'fas fa-ellipsis-h',       color: '#6B7280', bg: '#F9FAFB' },
+];
+
+const DAYS_AR = ['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+const MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+let appData = {
+    name: '',
+    userType: 'employee',
+    salary: 0,
+    payday: 25,
+    monthlyBudget: 0,
+    emergencyFund: 0,
+    currency: 'EGP',
+    transactions: [],
+    budgetCategories: {},
+    theme: 'light'
+};
+
+let currentPeriod = 'monthly';
+let selectedCategory = 'food';
+let receiptBase64 = null;
+let donutChart = null;
+
+function loadData() {
+    const s = localStorage.getItem('mizaniyati_v3');
+    if (s) {
+        try {
+            const parsed = JSON.parse(s);
+            appData = { ...appData, ...parsed };
+            if (!appData.transactions) appData.transactions = [];
+            if (!appData.budgetCategories) appData.budgetCategories = {};
+        } catch(e) {}
+    }
+}
+
+function saveData() {
+    localStorage.setItem('mizaniyati_v3', JSON.stringify(appData));
+}
+
+// ==========================================
+// SCREEN NAVIGATION
+// ==========================================
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function showSetup() { showScreen('setupScreen'); }
+
+function showMainApp() {
+    showScreen('mainApp');
+    switchToTab('home');
+    updateAll();
+}
+
+function switchToTab(tab) {
+    const screens = ['homeScreen','reportsScreen','addScreen','budgetScreen'];
+    screens.forEach(s => { document.getElementById(s).style.display = 'none'; });
+
+    const navIds = ['navHome','navReports',null,'navBudget','navSettings'];
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    if (tab === 'home') {
+        document.getElementById('homeScreen').style.display = 'block';
+        document.getElementById('navHome').classList.add('active');
+        updateHomeDashboard();
+    } else if (tab === 'reports') {
+        document.getElementById('reportsScreen').style.display = 'block';
+        document.getElementById('navReports').classList.add('active');
+        updateReports();
+    } else if (tab === 'add') {
+        document.getElementById('addScreen').style.display = 'block';
+        initAddScreen();
+    } else if (tab === 'budget') {
+        document.getElementById('budgetScreen').style.display = 'block';
+        document.getElementById('navBudget').classList.add('active');
+        updateBudgetScreen();
+    }
+}
+
+// ==========================================
+// SETUP
+// ==========================================
+function toggleSetupType() {
+    const t = document.getElementById('setupUserType').value;
+    document.getElementById('salarySection').style.display = t === 'employee' ? 'block' : 'none';
+}
+
+function handleSetup(e) {
+    e.preventDefault();
+    appData.name = document.getElementById('setupName').value || 'المستخدم';
+    appData.userType = document.getElementById('setupUserType').value;
+    appData.salary = parseFloat(document.getElementById('setupSalary').value) || 0;
+    appData.payday = parseInt(document.getElementById('setupPayday').value) || 25;
+    appData.monthlyBudget = parseFloat(document.getElementById('setupBudget').value) || appData.salary;
+    appData.currency = document.getElementById('setupCurrency').value;
+    appData.emergencyFund = parseFloat(document.getElementById('setupEmergency').value) || 0;
+    saveData();
+    showMainApp();
+    showToast('تم إعداد حسابك بنجاح! 🎉', 'success');
+}
+
+// ==========================================
+// HOME DASHBOARD
+// ==========================================
+function updateAll() {
+    updateHomeDashboard();
+}
+
+function updateHomeDashboard() {
+    const cur = getCurrency();
+    document.getElementById('currencyBadgeLabel').textContent = cur.short;
+    document.getElementById('heroBalanceUnit').textContent = cur.short;
+
+    const now = new Date();
+    const monthLabel = MONTHS_AR[now.getMonth()] + ' ' + now.getFullYear();
+    document.getElementById('currentMonthLabel').textContent = monthLabel;
+
+    const monthTxs = getMonthTransactions();
+    const totalSpent = monthTxs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+    const totalIncome = appData.salary + monthTxs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const balance = totalIncome - totalSpent;
+
+    document.getElementById('heroBalance').textContent = formatNum(balance);
+
+    const pct = totalIncome > 0 ? Math.round((totalSpent / totalIncome) * 100) : 0;
+    document.getElementById('heroPct').textContent = (pct > 0 ? '+' : '') + (100 - pct) + '%';
+
+    // Budget
+    const budget = appData.monthlyBudget || appData.salary || 1;
+    const budgetPct = Math.min(100, Math.round((totalSpent / budget) * 100));
+    document.getElementById('budgetSpentLabel').textContent = `${formatNum(totalSpent)} / ${formatNum(budget)} ${cur.short}`;
+    document.getElementById('budgetProgressFill').style.width = budgetPct + '%';
+
+    const overspend = Math.max(0, totalSpent - budget);
+    document.getElementById('budgetOverspend').textContent = formatNum(overspend) + ' ' + cur.short;
+
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    const remainingBudget = Math.max(0, budget - totalSpent);
+    const remainingDays = daysInMonth - now.getDate();
+    const weeklyRem = remainingDays > 0 ? (remainingBudget / remainingDays * 7) : 0;
+    document.getElementById('weeklyRemaining').textContent = formatNum(weeklyRem) + ' ' + cur.short;
+
+    renderRecentTransactions();
+}
+
+function renderRecentTransactions() {
+    const container = document.getElementById('recentTransactions');
+    const recent = [...appData.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+
+    if (recent.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p class="empty-state-text">لا توجد معاملات بعد.<br>اضغط + لإضافة أول مصروف</p></div>';
+        return;
+    }
+
+    const cur = getCurrency();
+    container.innerHTML = recent.map(tx => {
+        const cat = CATEGORIES.find(c=>c.id===tx.category) || CATEGORIES[7];
+        const sign = tx.type === 'expense' ? '-' : '+';
+        const cls = tx.type === 'expense' ? 'expense' : 'income';
+        const dateStr = formatRelativeDate(tx.date);
+        return `
+        <div class="transaction-item" onclick="openTxDetail('${tx.id}')">
+            <div class="tx-left">
+                <div class="tx-icon" style="background:${cat.bg}; color:${cat.color};">
+                    <i class="${cat.icon}"></i>
+                </div>
+                <div>
+                    <div class="tx-name">${tx.name}</div>
+                    <div class="tx-meta">${dateStr}</div>
+                </div>
+            </div>
+            <div style="text-align:left;">
+                <div class="tx-amount ${cls}">${sign}${formatNum(tx.amount)}</div>
+                <div class="tx-currency">${cur.short}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ==========================================
+// ADD TRANSACTION
+// ==========================================
+function initAddScreen() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('txDate').value = today;
+    document.getElementById('amountInput').value = '';
+    document.getElementById('txNote').value = '';
+    document.getElementById('amountDisplay').classList.remove('has-value');
+    receiptBase64 = null;
+    document.getElementById('receiptPreview').style.display = 'none';
+    document.getElementById('receiptPlaceholder').style.display = 'flex';
+
+    const cur = getCurrency();
+    document.getElementById('addCurrencyLabel').textContent = cur.label;
+
+    renderCategoryGrid();
+}
+
+function renderCategoryGrid() {
+    const grid = document.getElementById('categoryGrid');
+    grid.innerHTML = CATEGORIES.map(cat => `
+        <button type="button" class="cat-btn ${cat.id === selectedCategory ? 'selected' : ''}"
+            onclick="selectCategory('${cat.id}')">
+            <div class="cat-btn-icon" style="background:${cat.bg}; color:${cat.color};">
+                <i class="${cat.icon}"></i>
+            </div>
+            <span class="cat-btn-name">${cat.name}</span>
+        </button>
+    `).join('');
+}
+
+function selectCategory(id) {
+    selectedCategory = id;
+    renderCategoryGrid();
+}
+
+function updateAmountDisplay() {
+    const val = document.getElementById('amountInput').value;
+    document.getElementById('amountDisplay').classList.toggle('has-value', val.length > 0);
+}
+
+function triggerReceiptUpload() {
+    if (!receiptBase64) document.getElementById('receiptInput').click();
+}
+
+function previewReceipt(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        receiptBase64 = ev.target.result;
+        document.getElementById('receiptPreviewImg').src = receiptBase64;
+        document.getElementById('receiptPreview').style.display = 'block';
+        document.getElementById('receiptPlaceholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeReceipt(e) {
+    e.stopPropagation();
+    receiptBase64 = null;
+    document.getElementById('receiptPreview').style.display = 'none';
+    document.getElementById('receiptPlaceholder').style.display = 'flex';
+    document.getElementById('receiptInput').value = '';
+}
+
+function saveTx() {
+    const amount = parseFloat(document.getElementById('amountInput').value);
+    if (!amount || amount <= 0) { showToast('أدخل مبلغاً صحيحاً', 'error'); return; }
+
+    const tx = {
+        id: Date.now().toString(),
+        name: getCategoryName(selectedCategory),
+        amount: amount,
+        category: selectedCategory,
+        type: 'expense',
+        date: document.getElementById('txDate').value,
+        note: document.getElementById('txNote').value,
+        receipt: receiptBase64,
+        currency: appData.currency,
+        createdAt: new Date().toISOString()
+    };
+
+    appData.transactions.push(tx);
+    saveData();
+    showToast('تم حفظ المصروف بنجاح! ✅', 'success');
+    switchToTab('home');
+}
+
+// ==========================================
+// REPORTS
+// ==========================================
+function setPeriod(period, btn) {
+    currentPeriod = period;
+    document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    updateReports();
+}
+
+function updateReports() {
+    const cur = getCurrency();
+    document.getElementById('reportUnit').textContent = cur.short;
+
+    let txs = getFilteredTransactions();
+    const expenses = txs.filter(t=>t.type==='expense');
+    const total = expenses.reduce((s,t)=>s+t.amount,0);
+    document.getElementById('reportTotal').textContent = formatNum(total);
+
+    const periods = { monthly: 'هذا الشهر', weekly: 'هذا الأسبوع', yearly: 'هذه السنة' };
+    document.getElementById('reportPeriodLabel').textContent = 'إجمالي المصاريف (' + (periods[currentPeriod]||'') + ')';
+
+    // Dummy compare
+    const comparePct = Math.floor(Math.random() * 20) + 1;
+    const dir = Math.random() > 0.5 ? 'أقل' : 'أكثر';
+    document.getElementById('reportCompare').innerHTML = `<i class="fas fa-arrow-${dir==='أقل'?'down':'up'}"></i> ${dir} بـ ${comparePct}% عن الفترة الماضية`;
+
+    renderDonutChart(expenses);
+    renderCategoryBreakdown(expenses, total);
+    renderDailyChart();
+}
+
+function renderDonutChart(expenses) {
+    const ctx = document.getElementById('donutChart').getContext('2d');
+    const catTotals = {};
+    expenses.forEach(t => { catTotals[t.category] = (catTotals[t.category]||0) + t.amount; });
+
+    const labels = [], data = [], colors = [];
+    CATEGORIES.forEach(cat => {
+        if (catTotals[cat.id]) {
+            labels.push(cat.name);
+            data.push(catTotals[cat.id]);
+            colors.push(cat.color);
+        }
+    });
+
+    const topCat = CATEGORIES.find(c=>c.id===Object.keys(catTotals).sort((a,b)=>catTotals[b]-catTotals[a])[0]);
+    document.getElementById('topCatLabel').textContent = topCat ? topCat.name : '–';
+
+    if (donutChart) donutChart.destroy();
+
+    if (data.length === 0) {
+        ctx.clearRect(0,0,300,300);
+        return;
+    }
+
+    donutChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            cutout: '70%',
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.label}: ${formatNum(c.raw)}` } } }
+        }
+    });
+}
+
+function renderCategoryBreakdown(expenses, total) {
+    const container = document.getElementById('categoryBreakdown');
+    const cur = getCurrency();
+    const catTotals = {};
+    expenses.forEach(t => { catTotals[t.category] = (catTotals[t.category]||0) + t.amount; });
+
+    const sorted = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+    if (sorted.length === 0) { container.innerHTML = '<li style="padding:1rem;text-align:center;color:var(--text-muted);font-size:0.9rem;">لا توجد مصاريف في هذه الفترة</li>'; return; }
+
+    container.innerHTML = sorted.map(([catId, amount]) => {
+        const cat = CATEGORIES.find(c=>c.id===catId)||CATEGORIES[7];
+        const pct = total > 0 ? Math.round((amount/total)*100) : 0;
+        return `
+        <li class="category-list-item">
+            <div class="cat-icon" style="background:${cat.bg};color:${cat.color};"><i class="${cat.icon}"></i></div>
+            <div class="cat-info">
+                <div class="cat-name">${cat.name}</div>
+                <div class="cat-pct-label">${pct}% من الميزانية</div>
+                <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;background:${cat.color};"></div></div>
+            </div>
+            <div class="cat-amount">
+                <div class="cat-amount-val">${formatNum(amount)}</div>
+                <div class="cat-amount-unit">${cur.short}</div>
+            </div>
+        </li>`;
+    }).join('');
+}
+
+function renderDailyChart() {
+    const container = document.getElementById('dailyChart');
+    const now = new Date();
+    const days = [];
+    for (let i=6; i>=0; i--) {
+        const d = new Date(now); d.setDate(d.getDate()-i);
+        const dateStr = d.toISOString().split('T')[0];
+        const total = appData.transactions
+            .filter(t=>t.type==='expense'&&t.date===dateStr)
+            .reduce((s,t)=>s+t.amount,0);
+        // Day label: use Arabic day names
+        const dIdx = (d.getDay() + 1) % 7; // Adjust to match DAYS_AR
+        days.push({ label: DAYS_AR[dIdx], total, isToday: i===0, date: dateStr });
+    }
+
+    const max = Math.max(...days.map(d=>d.total), 1);
+    container.innerHTML = days.map(d => {
+        const heightPct = Math.max(8, Math.round((d.total/max)*100));
+        return `
+        <div class="bar-day">
+            <div class="bar-col ${d.isToday?'active':''}" style="height:${heightPct}%;"></div>
+            <div class="bar-label">${d.label}</div>
+        </div>`;
+    }).join('');
+}
+
+// ==========================================
+// BUDGET SCREEN
+// ==========================================
+function updateBudgetScreen() {
+    const cur = getCurrency();
+    const budget = appData.monthlyBudget || 0;
+    const monthTxs = getMonthTransactions().filter(t=>t.type==='expense');
+    const spent = monthTxs.reduce((s,t)=>s+t.amount,0);
+    const pct = budget > 0 ? Math.min(100, Math.round((spent/budget)*100)) : 0;
+
+    document.getElementById('budgetHeroUnit').textContent = cur.short;
+    document.getElementById('budgetHeroTotal').textContent = formatNum(budget);
+    document.getElementById('budgetHeroSpentPct').textContent = pct + '%';
+    document.getElementById('budgetHeroBar').style.width = pct + '%';
+
+    renderBudgetCategories(monthTxs, cur);
+}
+
+function renderBudgetCategories(monthTxs, cur) {
+    const container = document.getElementById('budgetCategoryList');
+    const cats = Object.entries(appData.budgetCategories);
+
+    if (cats.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="margin:0 1.25rem;"><i class="fas fa-tags"></i><p class="empty-state-text">لا توجد ميزانيات للفئات.<br>أضف ميزانية لكل فئة لمتابعة إنفاقك.</p></div>';
+        return;
+    }
+
+    container.innerHTML = cats.map(([catId, limit]) => {
+        const cat = CATEGORIES.find(c=>c.id===catId)||CATEGORIES[7];
+        const spent = monthTxs.filter(t=>t.category===catId).reduce((s,t)=>s+t.amount,0);
+        const pct = limit > 0 ? Math.min(100, Math.round((spent/limit)*100)) : 0;
+        const overBudget = spent > limit;
+        return `
+        <div class="budget-cat-card">
+            <div class="budget-cat-header">
+                <div class="budget-cat-left">
+                    <div class="cat-icon" style="background:${cat.bg};color:${cat.color};"><i class="${cat.icon}"></i></div>
+                    <div>
+                        <div style="font-size:0.9rem;font-weight:700;color:var(--text);">${cat.name}</div>
+                        <div class="budget-cat-vals">${formatNum(spent)} / ${formatNum(limit)} ${cur.short}</div>
+                    </div>
+                </div>
+                <button class="budget-edit-btn" onclick="openEditBudgetModal('${catId}')"><i class="fas fa-ellipsis-v"></i></button>
+            </div>
+            <div class="budget-progress-track">
+                <div class="budget-progress-fill" style="width:${pct}%;background:${overBudget?'#E63946':cat.color};"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:0.35rem;">
+                <span style="font-size:0.75rem;color:${overBudget?'var(--red)':'var(--text-muted)'};">
+                    ${overBudget ? '⚠️ تجاوزت الميزانية' : pct + '% مستخدم'}
+                </span>
+                <span style="font-size:0.75rem;color:var(--text-muted);">تبقى: ${formatNum(Math.max(0,limit-spent))} ${cur.short}</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function openAddBudgetModal() {
+    document.getElementById('budgetModalTitle').textContent = 'إضافة ميزانية فئة';
+    document.getElementById('budgetEditCat').value = '';
+    document.getElementById('budgetCatLimit').value = '';
+
+    const select = document.getElementById('budgetCatSelect');
+    select.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    select.disabled = false;
+
+    document.getElementById('addBudgetModal').classList.add('active');
+}
+
+function openEditBudgetModal(catId) {
+    document.getElementById('budgetModalTitle').textContent = 'تعديل ميزانية الفئة';
+    document.getElementById('budgetEditCat').value = catId;
+    document.getElementById('budgetCatLimit').value = appData.budgetCategories[catId] || '';
+
+    const select = document.getElementById('budgetCatSelect');
+    select.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}" ${c.id===catId?'selected':''}>${c.name}</option>`).join('');
+    select.disabled = true;
+
+    document.getElementById('addBudgetModal').classList.add('active');
+}
+
+function saveBudgetCategory(e) {
+    e.preventDefault();
+    const editCat = document.getElementById('budgetEditCat').value;
+    const catId = editCat || document.getElementById('budgetCatSelect').value;
+    const limit = parseFloat(document.getElementById('budgetCatLimit').value);
+    if (!limit || limit <= 0) { showToast('أدخل مبلغاً صحيحاً', 'error'); return; }
+    appData.budgetCategories[catId] = limit;
+    saveData();
+    closeModal('addBudgetModal');
+    updateBudgetScreen();
+    showToast('تم حفظ ميزانية الفئة ✅', 'success');
+}
+
+// ==========================================
+// TRANSACTION DETAIL
+// ==========================================
+function openTxDetail(txId) {
+    const tx = appData.transactions.find(t=>t.id===txId);
+    if (!tx) return;
+    const cat = CATEGORIES.find(c=>c.id===tx.category)||CATEGORIES[7];
+    const cur = getCurrency();
+    const sign = tx.type==='expense' ? '-' : '+';
+    const color = tx.type==='expense' ? 'var(--red)' : 'var(--primary)';
+
+    document.getElementById('txDetailContent').innerHTML = `
+        <div class="tx-detail-icon" style="background:${cat.bg};color:${cat.color};"><i class="${cat.icon}"></i></div>
+        <div class="tx-detail-amount" style="color:${color};">${sign}${formatNum(tx.amount)} ${cur.short}</div>
+        <div class="tx-detail-name">${tx.name}</div>
+        <div class="tx-detail-row">
+            <span class="tx-detail-key">الفئة</span>
+            <span class="tx-detail-val">${cat.name}</span>
+        </div>
+        <div class="tx-detail-row">
+            <span class="tx-detail-key">التاريخ</span>
+            <span class="tx-detail-val" style="direction:ltr;">${tx.date}</span>
+        </div>
+        ${tx.note ? `<div class="tx-detail-row"><span class="tx-detail-key">ملاحظات</span><span class="tx-detail-val">${tx.note}</span></div>` : ''}
+        ${tx.receipt ? `<div style="margin:1rem 0;"><img src="${tx.receipt}" style="width:100%;border-radius:14px;max-height:200px;object-fit:cover;" alt="الإيصال"></div>` : ''}
+        <div class="tx-detail-actions">
+            <button class="btn-delete-tx" onclick="deleteTx('${tx.id}')"><i class="fas fa-trash-alt"></i> حذف</button>
+            <button class="btn-edit-tx" onclick="editTx('${tx.id}')"><i class="fas fa-pen"></i> تعديل</button>
+        </div>
+    `;
+    document.getElementById('txDetailModal').classList.add('active');
+}
+
+function deleteTx(txId) {
+    if (!confirm('هل تريد حذف هذه المعاملة؟')) return;
+    appData.transactions = appData.transactions.filter(t=>t.id!==txId);
+    saveData();
+    closeModal('txDetailModal');
+    updateHomeDashboard();
+    showToast('تم حذف المعاملة', 'success');
+}
+
+function editTx(txId) {
+    closeModal('txDetailModal');
+    const tx = appData.transactions.find(t=>t.id===txId);
+    if (!tx) return;
+    selectedCategory = tx.category;
+    switchToTab('add');
+    setTimeout(()=>{
+        document.getElementById('amountInput').value = tx.amount;
+        document.getElementById('txDate').value = tx.date;
+        document.getElementById('txNote').value = tx.note || '';
+        document.getElementById('amountDisplay').classList.add('has-value');
+        // Mark as edit
+        document.getElementById('amountInput').dataset.editId = txId;
+        renderCategoryGrid();
+    }, 50);
+}
+
+// Override saveTx to handle edit mode
+const _origSaveTx = saveTx;
+window.saveTx = function() {
+    const editId = document.getElementById('amountInput').dataset.editId;
+    if (editId) {
+        const amount = parseFloat(document.getElementById('amountInput').value);
+        if (!amount || amount <= 0) { showToast('أدخل مبلغاً صحيحاً', 'error'); return; }
+        const idx = appData.transactions.findIndex(t=>t.id===editId);
+        if (idx !== -1) {
+            appData.transactions[idx] = {
+                ...appData.transactions[idx],
+                amount, category: selectedCategory,
+                name: getCategoryName(selectedCategory),
+                date: document.getElementById('txDate').value,
+                note: document.getElementById('txNote').value,
+                receipt: receiptBase64 || appData.transactions[idx].receipt
+            };
+            delete document.getElementById('amountInput').dataset.editId;
+            saveData();
+            showToast('تم تعديل المعاملة بنجاح! ✅', 'success');
+            switchToTab('home');
+        }
+        return;
+    }
+    const amount = parseFloat(document.getElementById('amountInput').value);
+    if (!amount || amount <= 0) { showToast('أدخل مبلغاً صحيحاً', 'error'); return; }
+
+    const tx = {
+        id: Date.now().toString(),
+        name: getCategoryName(selectedCategory),
+        amount, category: selectedCategory, type: 'expense',
+        date: document.getElementById('txDate').value,
+        note: document.getElementById('txNote').value,
+        receipt: receiptBase64, currency: appData.currency,
+        createdAt: new Date().toISOString()
+    };
+    appData.transactions.push(tx);
+    saveData();
+    showToast('تم حفظ المصروف بنجاح! ✅', 'success');
+    switchToTab('home');
+};
+
+// ==========================================
+// CURRENCY
+// ==========================================
+function openCurrencyModal() {
+    const container = document.getElementById('currencyList');
+    container.innerHTML = Object.entries(CURRENCIES).map(([code, cur]) => `
+        <div class="currency-option ${appData.currency===code?'active':''}" onclick="selectCurrency('${code}')">
+            <div>
+                <div class="currency-option-name">${cur.label}</div>
+                <div class="currency-option-code">${code}</div>
+            </div>
+            ${appData.currency===code ? '<i class="fas fa-check-circle currency-check"></i>' : ''}
+        </div>
+    `).join('');
+    document.getElementById('currencyModal').classList.add('active');
+}
+
+function selectCurrency(code) {
+    appData.currency = code;
+    saveData();
+    closeModal('currencyModal');
+    updateAll();
+    const cur = CURRENCIES[code];
+    document.getElementById('addCurrencyLabel').textContent = cur.label;
+    showToast('تم تغيير العملة إلى ' + cur.label, 'success');
+}
+
+// ==========================================
+// SETTINGS
+// ==========================================
+function openSettingsModal() {
+    document.getElementById('settingsName').value = appData.name || '';
+    document.getElementById('settingsSalary').value = appData.salary || '';
+    document.getElementById('settingsBudget').value = appData.monthlyBudget || '';
+    document.getElementById('settingsPayday').value = appData.payday || 25;
+    document.getElementById('settingsModal').classList.add('active');
+}
+
+function saveSettings(e) {
+    e.preventDefault();
+    appData.name = document.getElementById('settingsName').value;
+    appData.salary = parseFloat(document.getElementById('settingsSalary').value) || 0;
+    appData.monthlyBudget = parseFloat(document.getElementById('settingsBudget').value) || 0;
+    appData.payday = parseInt(document.getElementById('settingsPayday').value) || 25;
+    saveData();
+    closeModal('settingsModal');
+    updateAll();
+    showToast('تم حفظ الإعدادات ✅', 'success');
+}
+
+function resetApp() {
+    if (!confirm('سيتم حذف جميع البيانات. هل أنت متأكد؟')) return;
+    localStorage.removeItem('mizaniyati_v3');
+    location.reload();
+}
+
+// ==========================================
+// EXPORT
+// ==========================================
+function exportCSV() {
+    let csv = '\uFEFFالتاريخ,الاسم,الفئة,المبلغ,العملة,النوع,الملاحظات\n';
+    appData.transactions.forEach(tx => {
+        csv += `${tx.date},${tx.name},${getCategoryName(tx.category)},${tx.amount},${tx.currency||appData.currency},${tx.type==='expense'?'مصروف':'إيراد'},${tx.note||''}\n`;
+    });
+    downloadFile(new Blob([csv],{type:'text/csv;charset=utf-8'}), 'mizaniyati-export.csv');
+    showToast('تم تصدير Excel ✅', 'success');
+}
+
+function exportJSON() {
+    const data = JSON.stringify(appData, null, 2);
+    downloadFile(new Blob([data],{type:'application/json'}), 'mizaniyati-backup.json');
+    showToast('تم تصدير النسخة الاحتياطية ✅', 'success');
+}
+
+function exportPDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p','mm','a4');
+        const W = pdf.internal.pageSize.getWidth();
+        const cur = getCurrency();
+
+        pdf.setFillColor(45, 106, 79);
+        pdf.rect(0,0,W,40,'F');
+        pdf.setFont('helvetica','bold');
+        pdf.setFontSize(18); pdf.setTextColor(255,255,255);
+        pdf.text('Mizaniyati - Budget Report', W/2, 22, {align:'center'});
+        pdf.setFontSize(10);
+        pdf.text(new Date().toLocaleDateString('ar-EG'), W/2, 32, {align:'center'});
+
+        const monthTxs = getMonthTransactions().filter(t=>t.type==='expense');
+        const total = monthTxs.reduce((s,t)=>s+t.amount,0);
+
+        let y = 55;
+        pdf.setTextColor(30,30,30); pdf.setFont('helvetica','normal'); pdf.setFontSize(11);
+        pdf.text(`Total Expenses: ${formatNum(total)} ${cur.short}`, 20, y); y+=10;
+        pdf.text(`Balance: ${formatNum(appData.salary - total)} ${cur.short}`, 20, y); y+=10;
+        pdf.text(`Emergency Fund: ${formatNum(appData.emergencyFund)} ${cur.short}`, 20, y); y+=15;
+
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(13);
+        pdf.text('Transactions:', 20, y); y+=8;
+
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(9);
+        appData.transactions.slice(-30).forEach(tx => {
+            if (y > 270) { pdf.addPage(); y = 20; }
+            pdf.text(`${tx.date}  ${tx.name}  ${formatNum(tx.amount)} ${cur.short}`, 20, y); y+=7;
+        });
+
+        pdf.save('mizaniyati-report.pdf');
+        showToast('تم تصدير PDF ✅', 'success');
+    } catch(err) {
+        showToast('خطأ أثناء تصدير PDF', 'error');
+    }
+}
+
+function importData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        try {
+            const d = JSON.parse(ev.target.result);
+            if (confirm('سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟')) {
+                appData = { ...appData, ...d };
+                saveData();
+                updateAll();
+                showToast('تم استيراد البيانات ✅', 'success');
+            }
+        } catch { showToast('خطأ في قراءة الملف', 'error'); }
+    };
+    reader.readAsText(file);
+}
+
+function downloadFile(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ==========================================
+// MODAL UTILITIES
+// ==========================================
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeModal(overlay.id);
+    });
+});
+
+// ==========================================
+// HELPERS
+// ==========================================
+function getCurrency() { return CURRENCIES[appData.currency] || CURRENCIES.EGP; }
+function getCategoryName(id) { return (CATEGORIES.find(c=>c.id===id)||CATEGORIES[7]).name; }
+
+function getMonthTransactions() {
+    const now = new Date();
+    const ym = now.toISOString().slice(0,7);
+    return appData.transactions.filter(t => t.date && t.date.slice(0,7) === ym);
+}
+
+function getFilteredTransactions() {
+    const now = new Date();
+    if (currentPeriod === 'monthly') {
+        return getMonthTransactions();
+    } else if (currentPeriod === 'weekly') {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        return appData.transactions.filter(t => new Date(t.date) >= startOfWeek);
+    } else {
+        const year = now.getFullYear().toString();
+        return appData.transactions.filter(t => t.date && t.date.startsWith(year));
+    }
+}
+
+function formatNum(n) {
+    if (typeof n !== 'number') n = parseFloat(n)||0;
+    return n.toLocaleString('ar-EG', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function formatRelativeDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - d)/(1000*60*60*24));
+    if (diff === 0) return 'اليوم';
+    if (diff === 1) return 'أمس';
+    if (diff < 7) return `منذ ${diff} أيام`;
+    return d.toLocaleDateString('ar-EG');
+}
+
+function showToast(msg, type='') {
+    const t = document.getElementById('toast');
+    t.className = `toast active ${type}`;
+    t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':type==='error'?'fa-exclamation-circle':'fa-info-circle'}"></i> ${msg}`;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(()=>t.classList.remove('active'), 3500);
+}
+
+// ==========================================
+// PWA
+// ==========================================
+function registerSW() {
+    if (!('serviceWorker' in navigator)) return;
+    const sw = `const C='miz-v2';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(['/']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+    const blob = new Blob([sw],{type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
+
+function createManifest() {
+    const m = {"name":"Mizaniyati – ميزانيتي","short_name":"ميزانيتي","start_url":"/","display":"standalone","background_color":"#F0F5F2","theme_color":"#2D6A4F","orientation":"portrait","icons":[{"src":"https://via.placeholder.com/192x192/2D6A4F/ffffff?text=M","sizes":"192x192","type":"image/png"},{"src":"https://via.placeholder.com/512x512/2D6A4F/ffffff?text=M","sizes":"512x512","type":"image/png"}]};
+    const url = URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}));
+    document.getElementById('manifestPlaceholder').href = url;
+}
+
+// ==========================================
+// INIT
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    loadData();
+    registerSW();
+    createManifest();
+
+    // If already set up, go to main app; otherwise show welcome
+    if (appData.salary || appData.transactions.length > 0 || appData.name) {
+        showScreen('mainApp');
+        switchToTab('home');
+    } else {
+        showScreen('welcomeScreen');
+    }
+});
+</script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+<script>window.onload=function(){var d=document.createElement("div");d.id="appLoadFinished";document.body.appendChild(d);};</script>
+</body>
+
+</html>
